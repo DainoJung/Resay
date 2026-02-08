@@ -40,6 +40,7 @@ export const translations = {
     "category.vocabulary": "어휘",
     "category.expression": "표현",
     "category.pronunciation": "발음",
+    "category.perfect": "완벽",
 
     // Feedback card
     "feedback.original": "원문",
@@ -122,6 +123,7 @@ export const translations = {
     "category.vocabulary": "語彙",
     "category.expression": "表現",
     "category.pronunciation": "発音",
+    "category.perfect": "完璧",
 
     // Feedback card
     "feedback.original": "原文",

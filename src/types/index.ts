@@ -10,7 +10,7 @@ export interface Feedback {
   original: string;
   paraphrase: string;
   explanation: string;
-  category: "grammar" | "vocabulary" | "expression" | "pronunciation" | null;
+  category: "grammar" | "vocabulary" | "expression" | "pronunciation" | "perfect" | null;
   saved?: boolean;
 }
 
@@ -43,7 +43,7 @@ export interface GeminiFeedbackItem {
   original: string;
   paraphrase: string;
   explanation: string;
-  category: "grammar" | "vocabulary" | "expression" | "pronunciation";
+  category: "grammar" | "vocabulary" | "expression" | "pronunciation" | "perfect";
 }
 
 export interface GeminiExpressionItem {

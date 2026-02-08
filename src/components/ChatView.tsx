@@ -24,13 +24,13 @@ export default function ChatView({ utterances, mySpeaker, feedbacks, onSaveSente
     });
   }
 
-  const hasFeedback = feedbacks.length > 0;
+  const corrections = feedbacks.filter((fb) => fb.category !== "perfect");
 
   return (
     <div className="space-y-3">
-      {hasFeedback ? (
+      {corrections.length > 0 ? (
         <p className="text-sm text-gray-500 text-center">
-          {feedbacks.length}{t("chat.correctionsCount")}
+          {corrections.length}{t("chat.correctionsCount")}
         </p>
       ) : (
         <div className="text-center py-4">

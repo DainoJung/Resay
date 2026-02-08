@@ -9,6 +9,7 @@ const categoryKeys: Record<string, { labelKey: TranslationKey; color: string }> 
   vocabulary: { labelKey: "category.vocabulary", color: "bg-blue-400/20 text-blue-300" },
   expression: { labelKey: "category.expression", color: "bg-purple-400/20 text-purple-300" },
   pronunciation: { labelKey: "category.pronunciation", color: "bg-green-400/20 text-green-300" },
+  perfect: { labelKey: "category.perfect", color: "bg-emerald-400/20 text-emerald-300" },
 };
 
 interface ChatBubbleProps {
@@ -41,24 +42,34 @@ export default function ChatBubble({ text, isMe, feedback, onSaveSentence, isSav
         <p className="text-[15px] text-white leading-relaxed">{text}</p>
       </div>
 
-      {/* Correction card (dark) - only if there's feedback */}
+      {/* Feedback card */}
       {feedback && (
-        <div className="max-w-[85%] bg-gray-900 rounded-2xl px-4 py-3 space-y-2">
+        <div className={`max-w-[85%] rounded-2xl px-4 py-3 space-y-2 ${
+          feedback.category === "perfect"
+            ? "bg-emerald-50 border border-emerald-200"
+            : "bg-gray-900"
+        }`}>
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 space-y-2">
               {feedback.category && categoryKeys[feedback.category] && (
                 <span
                   className={`inline-block text-[11px] px-2 py-0.5 rounded-full font-medium ${
-                    categoryKeys[feedback.category].color
+                    feedback.category === "perfect"
+                      ? "bg-emerald-100 text-emerald-600"
+                      : categoryKeys[feedback.category].color
                   }`}
                 >
                   {t(categoryKeys[feedback.category].labelKey)}
                 </span>
               )}
-              <p className="text-[15px] text-white font-medium leading-relaxed">
+              <p className={`text-[15px] font-medium leading-relaxed ${
+                feedback.category === "perfect" ? "text-gray-800" : "text-white"
+              }`}>
                 {feedback.paraphrase}
               </p>
-              <p className="text-[13px] text-gray-400 leading-relaxed">
+              <p className={`text-[13px] leading-relaxed ${
+                feedback.category === "perfect" ? "text-gray-500" : "text-gray-400"
+              }`}>
                 {feedback.explanation}
               </p>
             </div>
@@ -66,7 +77,7 @@ export default function ChatBubble({ text, isMe, feedback, onSaveSentence, isSav
               <button
                 onClick={() => onSaveSentence(feedback.id)}
                 className={`flex-shrink-0 mt-0.5 transition-colors ${
-                  isSaved ? "text-emerald-400" : "text-gray-500 hover:text-emerald-400"
+                  isSaved ? "text-emerald-400" : (feedback.category === "perfect" ? "text-gray-400 hover:text-emerald-500" : "text-gray-500 hover:text-emerald-400")
                 }`}
               >
                 <svg
