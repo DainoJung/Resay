@@ -1,101 +1,131 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { useAudioRecorder } from "@/hooks/useAudioRecorder";
+import { Feedback } from "@/types";
+import RecordButton from "@/components/RecordButton";
+import RecordingStatus from "@/components/RecordingStatus";
+import FeedbackList from "@/components/FeedbackList";
+import FeedbackSkeleton from "@/components/FeedbackSkeleton";
+import EmptyState from "@/components/EmptyState";
+
+type Status = "idle" | "recording" | "transcribing" | "analyzing" | "done" | "error";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const { isRecording, duration, startRecording, stopRecording, error: recorderError } =
+    useAudioRecorder();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const [status, setStatus] = useState<Status>("idle");
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [transcript, setTranscript] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const handleStart = async () => {
+    setError(null);
+    setFeedbacks([]);
+    setTranscript("");
+    setStatus("recording");
+    await startRecording();
+  };
+
+  const handleStop = async () => {
+    const blob = await stopRecording();
+    if (!blob) {
+      setStatus("idle");
+      return;
+    }
+
+    try {
+      // Step 1: Transcribe
+      setStatus("transcribing");
+      const formData = new FormData();
+      formData.append("audio", blob, "recording.webm");
+
+      const transcribeRes = await fetch("/api/transcribe", {
+        method: "POST",
+        body: formData,
+      });
+
+      const transcribeData = await transcribeRes.json();
+      if (!transcribeRes.ok) {
+        throw new Error(transcribeData.error || "음성 변환 실패");
+      }
+
+      setTranscript(transcribeData.transcript);
+
+      // Step 2: Get feedback
+      setStatus("analyzing");
+      const feedbackRes = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          transcript: transcribeData.transcript,
+          audioUrl: transcribeData.audioUrl,
+        }),
+      });
+
+      const feedbackData = await feedbackRes.json();
+      if (!feedbackRes.ok) {
+        throw new Error(feedbackData.error || "피드백 생성 실패");
+      }
+
+      setFeedbacks(feedbackData.feedbacks);
+      setStatus("done");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "오류가 발생했습니다.");
+      setStatus("error");
+    }
+  };
+
+  const isProcessing = status === "transcribing" || status === "analyzing";
+  const displayError = recorderError || error;
+
+  const statusMessage: Record<string, string> = {
+    transcribing: "음성을 텍스트로 변환 중...",
+    analyzing: "AI가 피드백을 생성하는 중...",
+  };
+
+  return (
+    <div className="flex flex-col items-center px-4 pt-8 pb-24 min-h-screen">
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">Resay</h1>
+      <p className="text-sm text-gray-400 mb-8">영어를 더 자연스럽게</p>
+
+      {/* Record section */}
+      <div className="flex flex-col items-center gap-3 mb-8">
+        <RecordButton
+          isRecording={isRecording}
+          isProcessing={isProcessing}
+          onStart={handleStart}
+          onStop={handleStop}
+        />
+        <RecordingStatus isRecording={isRecording} duration={duration} />
+        {isProcessing && (
+          <p className="text-sm text-gray-500 animate-pulse">
+            {statusMessage[status]}
+          </p>
+        )}
+      </div>
+
+      {/* Error */}
+      {displayError && (
+        <div className="w-full max-w-md bg-red-50 text-red-700 text-sm rounded-xl p-4 mb-4">
+          {displayError}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+      )}
+
+      {/* Results */}
+      <div className="w-full max-w-md">
+        {isProcessing ? (
+          <FeedbackSkeleton />
+        ) : status === "done" ? (
+          <FeedbackList feedbacks={feedbacks} transcript={transcript} />
+        ) : status === "idle" && !displayError ? (
+          <EmptyState
+            title="영어로 말해보세요"
+            description="녹음 버튼을 누르고 영어로 말한 뒤, AI 피드백을 받아보세요."
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        ) : null}
+      </div>
     </div>
   );
 }
