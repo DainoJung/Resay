@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { useLanguage } from "@/lib/i18n/context";
 
 interface UseAudioRecorderReturn {
   isRecording: boolean;
@@ -14,6 +15,7 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
   const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useLanguage();
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -48,7 +50,7 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
       };
 
       recorder.onerror = () => {
-        setError("녹음 중 오류가 발생했습니다.");
+        setError(t("recorder.error"));
         stream.getTracks().forEach((track) => track.stop());
         resolveRef.current?.(null);
         resolveRef.current = null;
@@ -63,12 +65,12 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
       }, 1000);
     } catch (err) {
       if (err instanceof DOMException && err.name === "NotAllowedError") {
-        setError("마이크 사용 권한이 필요합니다. 브라우저 설정에서 허용해 주세요.");
+        setError(t("recorder.permissionDenied"));
       } else {
-        setError("마이크를 사용할 수 없습니다.");
+        setError(t("recorder.unavailable"));
       }
     }
-  }, []);
+  }, [t]);
 
   const stopRecording = useCallback(async (): Promise<Blob | null> => {
     if (timerRef.current) {

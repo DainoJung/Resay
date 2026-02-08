@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Session } from "@/types";
 import HistoryList from "@/components/HistoryList";
+import { useLanguage } from "@/lib/i18n/context";
 
 export default function HistoryPage() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useLanguage();
 
   useEffect(() => {
     async function fetchSessions() {
@@ -22,7 +24,6 @@ export default function HistoryPage() {
         return;
       }
 
-      // Fetch feedbacks for each session
       const sessionIds = sessionsData.map((s) => s.id);
       const { data: feedbacksData } = await supabase
         .from("feedbacks")
@@ -32,6 +33,11 @@ export default function HistoryPage() {
 
       const sessionsWithFeedbacks: Session[] = sessionsData.map((session) => ({
         ...session,
+        // Parse utterances from JSON string
+        utterances:
+          typeof session.utterances === "string"
+            ? JSON.parse(session.utterances)
+            : session.utterances || [],
         feedbacks: feedbacksData?.filter((fb) => fb.session_id === session.id) || [],
       }));
 
@@ -44,8 +50,8 @@ export default function HistoryPage() {
 
   return (
     <div className="px-4 pt-8 pb-24 min-h-screen max-w-md mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">기록</h1>
-      <p className="text-sm text-gray-400 mb-6">지난 피드백을 다시 확인하세요</p>
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">{t("history.title")}</h1>
+      <p className="text-sm text-gray-400 mb-6">{t("history.subtitle")}</p>
 
       {loading ? (
         <div className="space-y-3 animate-pulse">

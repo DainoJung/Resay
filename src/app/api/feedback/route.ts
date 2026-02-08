@@ -1,17 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { generateFeedback } from "@/lib/gemini";
+import { Utterance } from "@/types";
 
 export async function POST(req: NextRequest) {
   try {
-    const { transcript, audioUrl } = await req.json();
+    const { transcript, utterances, mySpeaker, audioUrl, lang } = (await req.json()) as {
+      transcript: string;
+      utterances: Utterance[];
+      mySpeaker: string;
+      audioUrl?: string;
+      lang?: string;
+    };
 
-    if (!transcript || typeof transcript !== "string") {
+    if (!transcript) {
       return NextResponse.json({ error: "Transcript is required" }, { status: 400 });
     }
 
-    // Generate feedback from Gemini
-    const feedbackItems = await generateFeedback(transcript);
+    // Filter to only my utterances for feedback
+    const myUtterances = utterances.filter((u) => u.speaker === mySpeaker);
+    const myText = myUtterances.map((u) => u.text).join("\n");
+
+    // Generate feedback only for my speech
+    const feedbackItems = await generateFeedback(myText, lang || "ko");
 
     // Save session to Supabase
     const { data: session, error: sessionError } = await supabaseAdmin
@@ -20,6 +31,8 @@ export async function POST(req: NextRequest) {
         transcript,
         audio_url: audioUrl || null,
         feedback_count: feedbackItems.length,
+        utterances: JSON.stringify(utterances),
+        my_speaker: mySpeaker,
       })
       .select("id")
       .single();
@@ -27,7 +40,7 @@ export async function POST(req: NextRequest) {
     if (sessionError) {
       console.error("Session save error:", sessionError);
       return NextResponse.json(
-        { error: "세션 저장에 실패했습니다." },
+        { error: "Failed to save session" },
         { status: 500 }
       );
     }
@@ -51,7 +64,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Return feedbacks with generated IDs
     const { data: savedFeedbacks } = await supabaseAdmin
       .from("feedbacks")
       .select("*")
@@ -65,7 +77,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("Feedback error:", error);
     return NextResponse.json(
-      { error: "피드백 생성에 실패했습니다. 다시 시도해 주세요." },
+      { error: "Failed to generate feedback" },
       { status: 500 }
     );
   }

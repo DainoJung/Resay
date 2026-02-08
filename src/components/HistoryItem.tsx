@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Session } from "@/types";
-import FeedbackCard from "./FeedbackCard";
+import { Session, Utterance } from "@/types";
+import ChatView from "./ChatView";
+import { useLanguage } from "@/lib/i18n/context";
 
 interface HistoryItemProps {
   session: Session;
@@ -10,9 +11,11 @@ interface HistoryItemProps {
 
 export default function HistoryItem({ session }: HistoryItemProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const { t, lang } = useLanguage();
 
   const date = new Date(session.created_at);
-  const dateStr = date.toLocaleDateString("ko-KR", {
+  const dateLocale = lang === "ja" ? "ja-JP" : "ko-KR";
+  const dateStr = date.toLocaleDateString(dateLocale, {
     month: "short",
     day: "numeric",
     hour: "2-digit",
@@ -23,6 +26,10 @@ export default function HistoryItem({ session }: HistoryItemProps) {
     session.transcript.length > 80
       ? session.transcript.slice(0, 80) + "..."
       : session.transcript;
+
+  const utterances: Utterance[] = session.utterances || [];
+  const mySpeaker = session.my_speaker || "A";
+  const hasChat = utterances.length > 0;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -36,12 +43,12 @@ export default function HistoryItem({ session }: HistoryItemProps) {
             <span className="text-xs text-gray-400">{dateStr}</span>
             {session.feedback_count > 0 && (
               <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
-                {session.feedback_count}개 피드백
+                {session.feedback_count}{t("history.feedbackCount")}
               </span>
             )}
             {session.feedback_count === 0 && (
               <span className="text-xs bg-green-50 text-green-600 px-2 py-0.5 rounded-full">
-                완벽!
+                {t("history.perfect")}
               </span>
             )}
           </div>
@@ -58,17 +65,29 @@ export default function HistoryItem({ session }: HistoryItemProps) {
         </svg>
       </button>
 
-      {isOpen && session.feedbacks && session.feedbacks.length > 0 && (
-        <div className="border-t border-gray-100 p-4 space-y-3 bg-gray-50">
-          {session.feedbacks.map((fb, i) => (
-            <FeedbackCard key={fb.id} feedback={fb} index={i} />
-          ))}
-        </div>
-      )}
-
-      {isOpen && (!session.feedbacks || session.feedbacks.length === 0) && (
-        <div className="border-t border-gray-100 p-6 text-center bg-gray-50">
-          <p className="text-sm text-gray-500">교정할 부분이 없었습니다.</p>
+      {isOpen && (
+        <div className="border-t border-gray-100 p-4 bg-gray-50">
+          {hasChat && session.feedbacks ? (
+            <ChatView
+              utterances={utterances}
+              mySpeaker={mySpeaker}
+              feedbacks={session.feedbacks}
+            />
+          ) : session.feedbacks && session.feedbacks.length > 0 ? (
+            // Fallback for old sessions without utterances
+            <div className="space-y-3">
+              {session.feedbacks.map((fb, i) => (
+                <div key={fb.id} className="bg-white rounded-xl p-3 space-y-1">
+                  <p className="text-xs text-gray-400">#{i + 1}</p>
+                  <p className="text-sm text-gray-600 line-through">{fb.original}</p>
+                  <p className="text-sm text-gray-900 font-medium">{fb.paraphrase}</p>
+                  <p className="text-xs text-gray-500">{fb.explanation}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 text-center py-4">{t("history.noCorrections")}</p>
+          )}
         </div>
       )}
     </div>

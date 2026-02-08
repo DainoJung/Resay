@@ -7,7 +7,9 @@ CREATE TABLE sessions (
   created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
   transcript TEXT NOT NULL,
   audio_url TEXT,
-  feedback_count INTEGER DEFAULT 0
+  feedback_count INTEGER DEFAULT 0,
+  utterances TEXT,     -- JSON string of speaker-labeled utterances
+  my_speaker TEXT      -- which speaker is "me"
 );
 
 -- 피드백 항목
@@ -26,3 +28,7 @@ ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE feedbacks ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public read" ON sessions FOR SELECT USING (true);
 CREATE POLICY "Public read" ON feedbacks FOR SELECT USING (true);
+
+-- 기존 테이블에 새 컬럼 추가 (이미 테이블이 있는 경우)
+-- ALTER TABLE sessions ADD COLUMN utterances TEXT;
+-- ALTER TABLE sessions ADD COLUMN my_speaker TEXT;

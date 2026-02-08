@@ -1,3 +1,8 @@
+export interface Utterance {
+  speaker: string;
+  text: string;
+}
+
 export interface Feedback {
   id: string;
   session_id: string;
@@ -14,6 +19,8 @@ export interface Session {
   transcript: string;
   audio_url: string | null;
   feedback_count: number;
+  utterances?: Utterance[];
+  my_speaker?: string;
   feedbacks?: Feedback[];
 }
 

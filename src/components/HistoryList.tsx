@@ -3,17 +3,20 @@
 import { Session } from "@/types";
 import HistoryItem from "./HistoryItem";
 import EmptyState from "./EmptyState";
+import { useLanguage } from "@/lib/i18n/context";
 
 interface HistoryListProps {
   sessions: Session[];
 }
 
 export default function HistoryList({ sessions }: HistoryListProps) {
+  const { t } = useLanguage();
+
   if (sessions.length === 0) {
     return (
       <EmptyState
-        title="아직 기록이 없어요"
-        description="녹음을 시작하면 여기에 기록이 쌓입니다."
+        title={t("history.empty.title")}
+        description={t("history.empty.description")}
       />
     );
   }

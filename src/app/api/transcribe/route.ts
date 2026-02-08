@@ -12,24 +12,33 @@ export async function POST(req: NextRequest) {
 
     const buffer = Buffer.from(await audioFile.arrayBuffer());
 
-    // Upload to AssemblyAI
-    const audioUrl = await uploadAudio(buffer);
-
-    // Transcribe
-    const transcript = await transcribeAudio(audioUrl);
-
-    if (!transcript.trim()) {
+    if (buffer.length === 0) {
       return NextResponse.json(
-        { error: "음성을 인식하지 못했습니다. 다시 시도해 주세요." },
+        { error: "Empty audio recording" },
         { status: 400 }
       );
     }
 
-    return NextResponse.json({ transcript, audioUrl });
+    const audioUrl = await uploadAudio(buffer);
+    const result = await transcribeAudio(audioUrl);
+
+    if (!result.transcript.trim()) {
+      return NextResponse.json(
+        { error: "Could not recognize speech" },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({
+      transcript: result.transcript,
+      utterances: result.utterances,
+      speakers: result.speakers,
+      audioUrl,
+    });
   } catch (error) {
     console.error("Transcribe error:", error);
     return NextResponse.json(
-      { error: "음성 변환에 실패했습니다. 다시 시도해 주세요." },
+      { error: "Transcription failed" },
       { status: 500 }
     );
   }

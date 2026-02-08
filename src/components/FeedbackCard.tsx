@@ -1,12 +1,14 @@
 "use client";
 
 import { Feedback } from "@/types";
+import { useLanguage } from "@/lib/i18n/context";
+import { TranslationKey } from "@/lib/i18n/translations";
 
-const categoryLabels: Record<string, { label: string; color: string }> = {
-  grammar: { label: "문법", color: "bg-red-100 text-red-700" },
-  vocabulary: { label: "어휘", color: "bg-blue-100 text-blue-700" },
-  expression: { label: "표현", color: "bg-purple-100 text-purple-700" },
-  pronunciation: { label: "발음", color: "bg-green-100 text-green-700" },
+const categoryKeys: Record<string, { labelKey: TranslationKey; color: string }> = {
+  grammar: { labelKey: "category.grammar", color: "bg-red-100 text-red-700" },
+  vocabulary: { labelKey: "category.vocabulary", color: "bg-blue-100 text-blue-700" },
+  expression: { labelKey: "category.expression", color: "bg-purple-100 text-purple-700" },
+  pronunciation: { labelKey: "category.pronunciation", color: "bg-green-100 text-green-700" },
 };
 
 interface FeedbackCardProps {
@@ -15,7 +17,8 @@ interface FeedbackCardProps {
 }
 
 export default function FeedbackCard({ feedback, index }: FeedbackCardProps) {
-  const cat = feedback.category ? categoryLabels[feedback.category] : null;
+  const { t } = useLanguage();
+  const cat = feedback.category ? categoryKeys[feedback.category] : null;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-3">
@@ -23,20 +26,20 @@ export default function FeedbackCard({ feedback, index }: FeedbackCardProps) {
         <span className="text-xs text-gray-400 font-medium">#{index + 1}</span>
         {cat && (
           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${cat.color}`}>
-            {cat.label}
+            {t(cat.labelKey)}
           </span>
         )}
       </div>
 
       {/* Original */}
       <div>
-        <p className="text-xs text-gray-400 mb-1">원문</p>
+        <p className="text-xs text-gray-400 mb-1">{t("feedback.original")}</p>
         <p className="text-gray-600 line-through decoration-red-300">{feedback.original}</p>
       </div>
 
       {/* Paraphrase */}
       <div>
-        <p className="text-xs text-gray-400 mb-1">교정</p>
+        <p className="text-xs text-gray-400 mb-1">{t("feedback.correction")}</p>
         <p className="text-gray-900 font-medium">{feedback.paraphrase}</p>
       </div>
 
