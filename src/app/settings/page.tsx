@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/context";
 import { Language } from "@/lib/i18n/translations";
 
@@ -9,12 +10,34 @@ const languages: { code: Language; flag: string; label: string }[] = [
 ];
 
 export default function SettingsPage() {
-  const { lang, setLang, t } = useLanguage();
+  const { lang, setLang, t, userName, setUserName } = useLanguage();
 
   return (
-    <div className="px-4 pt-8 pb-24 min-h-screen max-w-md mx-auto">
+    <div className="px-4 pt-6 pb-24 min-h-screen max-w-md mx-auto">
+      <Link
+        href="/"
+        className="flex items-center gap-1 text-sm text-gray-500 mb-4"
+      >
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+      </Link>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">{t("settings.title")}</h1>
 
+      {/* Name setting */}
+      <div className="space-y-2 mb-8">
+        <h2 className="text-sm font-medium text-gray-500 px-1">{t("settings.name")}</h2>
+        <p className="text-xs text-gray-400 px-1 mb-3">{t("settings.nameDescription")}</p>
+        <input
+          type="text"
+          value={userName}
+          onChange={(e) => setUserName(e.target.value)}
+          placeholder={t("settings.namePlaceholder")}
+          className="w-full rounded-2xl border border-gray-200 bg-white p-4 text-gray-900 font-medium outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-colors"
+        />
+      </div>
+
+      {/* Language setting */}
       <div className="space-y-2">
         <h2 className="text-sm font-medium text-gray-500 px-1">{t("settings.language")}</h2>
         <p className="text-xs text-gray-400 px-1 mb-3">{t("settings.languageDescription")}</p>

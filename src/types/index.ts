@@ -19,6 +19,7 @@ export interface Session {
   transcript: string;
   audio_url: string | null;
   feedback_count: number;
+  duration?: number;
   utterances?: Utterance[];
   my_speaker?: string;
   feedbacks?: Feedback[];

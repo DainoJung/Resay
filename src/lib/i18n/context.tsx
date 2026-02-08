@@ -7,14 +7,19 @@ interface LanguageContextType {
   lang: Language;
   setLang: (lang: Language) => void;
   t: (key: TranslationKey) => string;
+  userName: string;
+  setUserName: (name: string) => void;
 }
 
 const LanguageContext = createContext<LanguageContextType | null>(null);
 
 const STORAGE_KEY = "resay-lang";
+const NAME_STORAGE_KEY = "resay-user-name";
+const DEFAULT_NAME = "Tomo";
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Language>("ko");
+  const [userName, setUserNameState] = useState(DEFAULT_NAME);
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -22,12 +27,21 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       setLangState(saved);
       document.documentElement.lang = saved;
     }
+    const savedName = localStorage.getItem(NAME_STORAGE_KEY);
+    if (savedName) {
+      setUserNameState(savedName);
+    }
   }, []);
 
   const setLang = useCallback((newLang: Language) => {
     setLangState(newLang);
     localStorage.setItem(STORAGE_KEY, newLang);
     document.documentElement.lang = newLang;
+  }, []);
+
+  const setUserName = useCallback((name: string) => {
+    setUserNameState(name);
+    localStorage.setItem(NAME_STORAGE_KEY, name);
   }, []);
 
   const t = useCallback(
@@ -38,7 +52,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   );
 
   return (
-    <LanguageContext.Provider value={{ lang, setLang, t }}>
+    <LanguageContext.Provider value={{ lang, setLang, t, userName, setUserName }}>
       {children}
     </LanguageContext.Provider>
   );

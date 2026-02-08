@@ -4,6 +4,7 @@ export const translations = {
   ko: {
     // App
     "app.subtitle": "영어를 더 자연스럽게",
+    "home.partnerName": "Tomo",
 
     // Nav
     "nav.record": "녹음",
@@ -48,6 +49,7 @@ export const translations = {
     "feedbackList.nothingToFix": "교정할 부분이 없습니다.",
     "feedbackList.count": "개의 피드백",
 
+
     // History
     "history.title": "기록",
     "history.subtitle": "지난 피드백을 다시 확인하세요",
@@ -56,6 +58,15 @@ export const translations = {
     "history.feedbackCount": "개 피드백",
     "history.perfect": "완벽!",
     "history.noCorrections": "교정할 부분이 없었습니다.",
+    "history.tab.calls": "녹음",
+    "history.tab.saved": "보관",
+    "history.saved.expressions": "표현",
+    "history.saved.sentences": "문장",
+    "history.saved.empty": "아직 보관한 항목이 없어요",
+    "history.card.practice": "연습",
+    "history.card.bookmark": "보관",
+    "history.detail.expressions": "내게 딱 맞는 원어민 표현",
+    "history.detail.callContent": "통화 내용",
 
     // Audio recorder errors
     "recorder.error": "녹음 중 오류가 발생했습니다.",
@@ -64,12 +75,16 @@ export const translations = {
 
     // Settings
     "settings.title": "설정",
+    "settings.name": "이름",
+    "settings.nameDescription": "홈 화면에 표시되는 이름",
+    "settings.namePlaceholder": "이름을 입력하세요",
     "settings.language": "언어",
     "settings.languageDescription": "앱 표시 언어를 선택하세요",
   },
   ja: {
     // App
     "app.subtitle": "英語をもっと自然に",
+    "home.partnerName": "Tomo",
 
     // Nav
     "nav.record": "録音",
@@ -122,6 +137,15 @@ export const translations = {
     "history.feedbackCount": "件のフィードバック",
     "history.perfect": "完璧！",
     "history.noCorrections": "修正する箇所はありませんでした。",
+    "history.tab.calls": "録音",
+    "history.tab.saved": "保管",
+    "history.saved.expressions": "表現",
+    "history.saved.sentences": "文章",
+    "history.saved.empty": "まだ保管した項目がありません",
+    "history.card.practice": "練習",
+    "history.card.bookmark": "保管",
+    "history.detail.expressions": "あなたにぴったりのネイティブ表現",
+    "history.detail.callContent": "通話内容",
 
     // Audio recorder errors
     "recorder.error": "録音中にエラーが発生しました。",
@@ -130,6 +154,9 @@ export const translations = {
 
     // Settings
     "settings.title": "設定",
+    "settings.name": "名前",
+    "settings.nameDescription": "ホーム画面に表示される名前",
+    "settings.namePlaceholder": "名前を入力してください",
     "settings.language": "言語",
     "settings.languageDescription": "アプリの表示言語を選択してください",
   },

@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:www.assemblyai.com)",
+      "Bash(npx create-next-app:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx next build:*)",
+      "Bash(npx next lint:*)",
+      "Bash(gh repo create:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(npm run build:*)",
+      "Bash(curl:*)"
+    ]
+  }
+}

@@ -7,9 +7,10 @@ import { useLanguage } from "@/lib/i18n/context";
 
 interface HistoryListProps {
   sessions: Session[];
+  onSelect: (session: Session) => void;
 }
 
-export default function HistoryList({ sessions }: HistoryListProps) {
+export default function HistoryList({ sessions, onSelect }: HistoryListProps) {
   const { t } = useLanguage();
 
   if (sessions.length === 0) {
@@ -22,9 +23,9 @@ export default function HistoryList({ sessions }: HistoryListProps) {
   }
 
   return (
-    <div className="space-y-3">
+    <div>
       {sessions.map((session) => (
-        <HistoryItem key={session.id} session={session} />
+        <HistoryItem key={session.id} session={session} onSelect={onSelect} />
       ))}
     </div>
   );

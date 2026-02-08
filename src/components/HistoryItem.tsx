@@ -1,95 +1,52 @@
 "use client";
 
-import { useState } from "react";
-import { Session, Utterance } from "@/types";
-import ChatView from "./ChatView";
+import { Session } from "@/types";
 import { useLanguage } from "@/lib/i18n/context";
 
 interface HistoryItemProps {
   session: Session;
+  onSelect: (session: Session) => void;
 }
 
-export default function HistoryItem({ session }: HistoryItemProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const { t, lang } = useLanguage();
+function formatDuration(seconds: number, lang: string): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  if (lang === "ja") {
+    if (m > 0) return s > 0 ? `${m}分 ${s}秒` : `${m}分`;
+    return `${s}秒`;
+  }
+  if (m > 0) return s > 0 ? `${m}분 ${s}초` : `${m}분`;
+  return `${s}초`;
+}
+
+export default function HistoryItem({ session, onSelect }: HistoryItemProps) {
+  const { lang } = useLanguage();
 
   const date = new Date(session.created_at);
-  const dateLocale = lang === "ja" ? "ja-JP" : "ko-KR";
-  const dateStr = date.toLocaleDateString(dateLocale, {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  const dateStr = `${y}.${m}.${d}`;
 
-  const previewText =
-    session.transcript.length > 80
-      ? session.transcript.slice(0, 80) + "..."
+  const title =
+    session.transcript.length > 30
+      ? session.transcript.slice(0, 30) + "..."
       : session.transcript;
 
-  const utterances: Utterance[] = session.utterances || [];
-  const mySpeaker = session.my_speaker || "A";
-  const hasChat = utterances.length > 0;
+  const durationStr = session.duration
+    ? formatDuration(session.duration, lang)
+    : null;
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full text-left p-4 flex items-start justify-between gap-3"
-      >
-        <div className="flex-1 min-w-0">
-          <p className="text-sm text-gray-900 leading-relaxed">{previewText}</p>
-          <div className="flex items-center gap-2 mt-2">
-            <span className="text-xs text-gray-400">{dateStr}</span>
-            {session.feedback_count > 0 && (
-              <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
-                {session.feedback_count}{t("history.feedbackCount")}
-              </span>
-            )}
-            {session.feedback_count === 0 && (
-              <span className="text-xs bg-green-50 text-green-600 px-2 py-0.5 rounded-full">
-                {t("history.perfect")}
-              </span>
-            )}
-          </div>
-        </div>
-        <svg
-          className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform ${
-            isOpen ? "rotate-180" : ""
-          }`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-
-      {isOpen && (
-        <div className="border-t border-gray-100 p-4 bg-gray-50">
-          {hasChat && session.feedbacks ? (
-            <ChatView
-              utterances={utterances}
-              mySpeaker={mySpeaker}
-              feedbacks={session.feedbacks}
-            />
-          ) : session.feedbacks && session.feedbacks.length > 0 ? (
-            // Fallback for old sessions without utterances
-            <div className="space-y-3">
-              {session.feedbacks.map((fb, i) => (
-                <div key={fb.id} className="bg-white rounded-xl p-3 space-y-1">
-                  <p className="text-xs text-gray-400">#{i + 1}</p>
-                  <p className="text-sm text-gray-600 line-through">{fb.original}</p>
-                  <p className="text-sm text-gray-900 font-medium">{fb.paraphrase}</p>
-                  <p className="text-xs text-gray-500">{fb.explanation}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-gray-500 text-center py-4">{t("history.noCorrections")}</p>
-          )}
-        </div>
-      )}
-    </div>
+    <button
+      onClick={() => onSelect(session)}
+      className="w-full text-left py-5 border-b border-gray-100"
+    >
+      <p className="text-base font-bold text-gray-900 mb-2">{title}</p>
+      <p className="text-sm text-gray-400">
+        {dateStr}
+        {durationStr && <span>  ·  {durationStr}</span>}
+      </p>
+    </button>
   );
 }
