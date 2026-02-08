@@ -15,9 +15,11 @@ interface ChatBubbleProps {
   text: string;
   isMe: boolean;
   feedback?: Feedback;
+  onSaveSentence?: (feedbackId: string) => void;
+  isSaved?: boolean;
 }
 
-export default function ChatBubble({ text, isMe, feedback }: ChatBubbleProps) {
+export default function ChatBubble({ text, isMe, feedback, onSaveSentence, isSaved }: ChatBubbleProps) {
   const { t } = useLanguage();
 
   if (!isMe) {
@@ -42,21 +44,43 @@ export default function ChatBubble({ text, isMe, feedback }: ChatBubbleProps) {
       {/* Correction card (dark) - only if there's feedback */}
       {feedback && (
         <div className="max-w-[85%] bg-gray-900 rounded-2xl px-4 py-3 space-y-2">
-          {feedback.category && categoryKeys[feedback.category] && (
-            <span
-              className={`inline-block text-[11px] px-2 py-0.5 rounded-full font-medium ${
-                categoryKeys[feedback.category].color
-              }`}
-            >
-              {t(categoryKeys[feedback.category].labelKey)}
-            </span>
-          )}
-          <p className="text-[15px] text-white font-medium leading-relaxed">
-            {feedback.paraphrase}
-          </p>
-          <p className="text-[13px] text-gray-400 leading-relaxed">
-            {feedback.explanation}
-          </p>
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-1 space-y-2">
+              {feedback.category && categoryKeys[feedback.category] && (
+                <span
+                  className={`inline-block text-[11px] px-2 py-0.5 rounded-full font-medium ${
+                    categoryKeys[feedback.category].color
+                  }`}
+                >
+                  {t(categoryKeys[feedback.category].labelKey)}
+                </span>
+              )}
+              <p className="text-[15px] text-white font-medium leading-relaxed">
+                {feedback.paraphrase}
+              </p>
+              <p className="text-[13px] text-gray-400 leading-relaxed">
+                {feedback.explanation}
+              </p>
+            </div>
+            {onSaveSentence && (
+              <button
+                onClick={() => onSaveSentence(feedback.id)}
+                className={`flex-shrink-0 mt-0.5 transition-colors ${
+                  isSaved ? "text-emerald-400" : "text-gray-500 hover:text-emerald-400"
+                }`}
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill={isSaved ? "currentColor" : "none"}
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={isSaved ? 0 : 2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>

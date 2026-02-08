@@ -28,10 +28,10 @@ export default function HistoryItem({ session, onSelect }: HistoryItemProps) {
   const d = String(date.getDate()).padStart(2, "0");
   const dateStr = `${y}.${m}.${d}`;
 
-  const title =
-    session.transcript.length > 30
+  const title = session.title
+    || (session.transcript.length > 30
       ? session.transcript.slice(0, 30) + "..."
-      : session.transcript;
+      : session.transcript);
 
   const durationStr = session.duration
     ? formatDuration(session.duration, lang)

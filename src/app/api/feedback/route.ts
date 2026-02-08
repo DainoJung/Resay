@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
-import { generateFeedback } from "@/lib/gemini";
+import { generateFeedback, generateExpressions, generateTitle } from "@/lib/gemini";
 import { Utterance } from "@/types";
 
 export async function POST(req: NextRequest) {
@@ -21,8 +21,13 @@ export async function POST(req: NextRequest) {
     const myUtterances = utterances.filter((u) => u.speaker === mySpeaker);
     const myText = myUtterances.map((u) => u.text).join("\n");
 
-    // Generate feedback only for my speech
-    const feedbackItems = await generateFeedback(myText, lang || "ko");
+    // Generate feedback, expressions, and title in parallel
+    const userLang = lang || "ko";
+    const [feedbackItems, expressionItems, title] = await Promise.all([
+      generateFeedback(myText, userLang),
+      generateExpressions(transcript, userLang),
+      generateTitle(transcript, userLang),
+    ]);
 
     // Save session to Supabase
     const { data: session, error: sessionError } = await supabaseAdmin
@@ -33,6 +38,7 @@ export async function POST(req: NextRequest) {
         feedback_count: feedbackItems.length,
         utterances: JSON.stringify(utterances),
         my_speaker: mySpeaker,
+        title: title || null,
       })
       .select("id")
       .single();
@@ -64,8 +70,33 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Save expressions to Supabase
+    if (expressionItems.length > 0) {
+      const expressionRows = expressionItems.map((item) => ({
+        session_id: session.id,
+        keyword: item.keyword,
+        meaning: item.meaning,
+        example: item.example,
+        highlight_word: item.highlight_word,
+      }));
+
+      const { error: expressionError } = await supabaseAdmin
+        .from("expressions")
+        .insert(expressionRows);
+
+      if (expressionError) {
+        console.error("Expression save error:", expressionError);
+      }
+    }
+
     const { data: savedFeedbacks } = await supabaseAdmin
       .from("feedbacks")
+      .select("*")
+      .eq("session_id", session.id)
+      .order("created_at", { ascending: true });
+
+    const { data: savedExpressions } = await supabaseAdmin
+      .from("expressions")
       .select("*")
       .eq("session_id", session.id)
       .order("created_at", { ascending: true });
@@ -73,6 +104,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       sessionId: session.id,
       feedbacks: savedFeedbacks || [],
+      expressions: savedExpressions || [],
+      title: title || null,
     });
   } catch (error) {
     console.error("Feedback error:", error);

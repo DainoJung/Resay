@@ -32,6 +32,8 @@ export const translations = {
     // Chat view
     "chat.correctionsCount": "개의 교정이 있어요",
     "chat.perfect": "완벽해요! 교정할 부분이 없습니다.",
+    "chat.saveSentence": "문장 저장",
+    "chat.saved": "저장됨",
 
     // Feedback categories
     "category.grammar": "문법",
@@ -112,6 +114,8 @@ export const translations = {
     // Chat view
     "chat.correctionsCount": "件の修正があります",
     "chat.perfect": "完璧です！修正する箇所はありません。",
+    "chat.saveSentence": "文章を保存",
+    "chat.saved": "保存済み",
 
     // Feedback categories
     "category.grammar": "文法",

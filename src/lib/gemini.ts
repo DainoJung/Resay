@@ -1,5 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-import { GeminiFeedbackItem } from "@/types";
+import { GeminiFeedbackItem, GeminiExpressionItem } from "@/types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
@@ -67,4 +67,85 @@ export async function generateFeedback(transcript: string, lang: string = "ko"):
     console.error("Failed to parse Gemini response:", text);
     return [];
   }
+}
+
+function getExpressionsPrompt(lang: string): string {
+  const langInstruction = explanationLanguage[lang] || explanationLanguage.ko;
+
+  return `You are an English language coach.
+
+Given a transcript of someone speaking English, suggest 3-5 useful native expressions that are relevant to the conversation topic.
+These should be expressions the speaker could have used or would benefit from learning.
+
+For each expression, provide:
+- "keyword": the expression itself (e.g., "come in handy")
+- "meaning": a brief meaning ${langInstruction}
+- "example": an example sentence using the expression
+- "highlight_word": the part of the example to highlight (usually the expression itself)
+
+Respond with ONLY a JSON array. No markdown, no code blocks, no extra text.
+
+Example response:
+[
+  {
+    "keyword": "come in handy",
+    "meaning": "${lang === "ja" ? "役に立つ" : "유용하게 쓰이다"}",
+    "example": "This tool will come in handy when you need to fix things.",
+    "highlight_word": "come in handy"
+  }
+]`;
+}
+
+export async function generateExpressions(transcript: string, lang: string = "ko"): Promise<GeminiExpressionItem[]> {
+  const response = await ai.models.generateContent({
+    model: "gemini-3-flash-preview",
+    contents: [
+      {
+        role: "user",
+        parts: [{ text: `Based on this English conversation, suggest useful native expressions:\n\n"${transcript}"` }],
+      },
+    ],
+    config: {
+      systemInstruction: getExpressionsPrompt(lang),
+      temperature: 0.5,
+    },
+  });
+
+  const text = response.text?.trim() || "[]";
+  const cleaned = text
+    .replace(/^```json?\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+
+  try {
+    const parsed = JSON.parse(cleaned);
+    if (!Array.isArray(parsed)) return [];
+    return parsed as GeminiExpressionItem[];
+  } catch {
+    console.error("Failed to parse expressions response:", text);
+    return [];
+  }
+}
+
+export async function generateTitle(transcript: string, lang: string = "ko"): Promise<string> {
+  const langMap: Record<string, string> = {
+    ko: "한국어",
+    ja: "日本語",
+  };
+  const targetLang = langMap[lang] || langMap.ko;
+
+  const response = await ai.models.generateContent({
+    model: "gemini-3-flash-preview",
+    contents: [
+      {
+        role: "user",
+        parts: [{ text: `Summarize the topic of this English conversation in a short title (max 30 characters) in ${targetLang}. Respond with ONLY the title text, nothing else.\n\n"${transcript}"` }],
+      },
+    ],
+    config: {
+      temperature: 0.3,
+    },
+  });
+
+  return response.text?.trim().slice(0, 30) || "";
 }

@@ -11,6 +11,18 @@ export interface Feedback {
   paraphrase: string;
   explanation: string;
   category: "grammar" | "vocabulary" | "expression" | "pronunciation" | null;
+  saved?: boolean;
+}
+
+export interface Expression {
+  id: string;
+  session_id: string;
+  created_at: string;
+  keyword: string;
+  meaning: string;
+  example: string;
+  highlight_word: string;
+  saved: boolean;
 }
 
 export interface Session {
@@ -23,6 +35,8 @@ export interface Session {
   utterances?: Utterance[];
   my_speaker?: string;
   feedbacks?: Feedback[];
+  title?: string | null;
+  expressions?: Expression[];
 }
 
 export interface GeminiFeedbackItem {
@@ -30,4 +44,11 @@ export interface GeminiFeedbackItem {
   paraphrase: string;
   explanation: string;
   category: "grammar" | "vocabulary" | "expression" | "pronunciation";
+}
+
+export interface GeminiExpressionItem {
+  keyword: string;
+  meaning: string;
+  example: string;
+  highlight_word: string;
 }

@@ -3,11 +3,13 @@
 import { useState } from "react";
 
 interface ExpressionCardProps {
+  id?: string;
   keyword: string;
   meaning: string;
   example: string;
   highlightWord: string;
   bookmarked?: boolean;
+  onBookmarkToggle?: (id: string, saved: boolean) => void;
 }
 
 function highlightText(text: string, highlight: string) {
@@ -30,13 +32,23 @@ function highlightText(text: string, highlight: string) {
 }
 
 export default function ExpressionCard({
+  id,
   keyword,
   meaning,
   example,
   highlightWord,
   bookmarked: initialBookmarked = false,
+  onBookmarkToggle,
 }: ExpressionCardProps) {
   const [bookmarked, setBookmarked] = useState(initialBookmarked);
+
+  const handleBookmark = () => {
+    const newValue = !bookmarked;
+    setBookmarked(newValue);
+    if (id && onBookmarkToggle) {
+      onBookmarkToggle(id, newValue);
+    }
+  };
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-4">
@@ -54,8 +66,8 @@ export default function ExpressionCard({
           <p className="text-sm text-gray-500 mt-0.5">{meaning}</p>
         </div>
         <button
-          onClick={() => setBookmarked(!bookmarked)}
-          className="text-gray-400 hover:text-emerald-500 transition-colors flex-shrink-0 mt-0.5"
+          onClick={handleBookmark}
+          className={`${bookmarked ? "text-emerald-500" : "text-gray-400"} hover:text-emerald-500 transition-colors flex-shrink-0 mt-0.5`}
         >
           <svg
             className="w-5 h-5"

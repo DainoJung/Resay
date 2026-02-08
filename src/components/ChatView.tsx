@@ -8,9 +8,11 @@ interface ChatViewProps {
   utterances: Utterance[];
   mySpeaker: string;
   feedbacks: Feedback[];
+  onSaveSentence?: (feedbackId: string) => void;
+  savedFeedbackIds?: Set<string>;
 }
 
-export default function ChatView({ utterances, mySpeaker, feedbacks }: ChatViewProps) {
+export default function ChatView({ utterances, mySpeaker, feedbacks, onSaveSentence, savedFeedbackIds }: ChatViewProps) {
   const { t } = useLanguage();
 
   // Match feedback to utterance by finding which utterance contains the original text
@@ -47,6 +49,8 @@ export default function ChatView({ utterances, mySpeaker, feedbacks }: ChatViewP
             text={utterance.text}
             isMe={isMe}
             feedback={feedback}
+            onSaveSentence={onSaveSentence}
+            isSaved={feedback ? savedFeedbackIds?.has(feedback.id) : false}
           />
         );
       })}

@@ -3,17 +3,29 @@
 import { useState } from "react";
 
 interface SentenceCardProps {
+  id?: string;
   english: string;
   korean: string;
   bookmarked?: boolean;
+  onBookmarkToggle?: (id: string, saved: boolean) => void;
 }
 
 export default function SentenceCard({
+  id,
   english,
   korean,
   bookmarked: initialBookmarked = false,
+  onBookmarkToggle,
 }: SentenceCardProps) {
   const [bookmarked, setBookmarked] = useState(initialBookmarked);
+
+  const handleBookmark = () => {
+    const newValue = !bookmarked;
+    setBookmarked(newValue);
+    if (id && onBookmarkToggle) {
+      onBookmarkToggle(id, newValue);
+    }
+  };
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-4">
@@ -26,8 +38,8 @@ export default function SentenceCard({
             </svg>
           </button>
           <button
-            onClick={() => setBookmarked(!bookmarked)}
-            className="text-gray-400 hover:text-emerald-500 transition-colors"
+            onClick={handleBookmark}
+            className={`${bookmarked ? "text-emerald-500" : "text-gray-400"} hover:text-emerald-500 transition-colors`}
           >
             <svg
               className="w-5 h-5"

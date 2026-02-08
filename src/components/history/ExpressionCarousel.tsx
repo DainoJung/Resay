@@ -4,17 +4,20 @@ import { useRef, useState, useEffect } from "react";
 import ExpressionCard from "./ExpressionCard";
 
 interface Expression {
+  id?: string;
   keyword: string;
   meaning: string;
   example: string;
   highlightWord: string;
+  saved?: boolean;
 }
 
 interface ExpressionCarouselProps {
   expressions: Expression[];
+  onBookmarkToggle?: (id: string, saved: boolean) => void;
 }
 
-export default function ExpressionCarousel({ expressions }: ExpressionCarouselProps) {
+export default function ExpressionCarousel({ expressions, onBookmarkToggle }: ExpressionCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -43,8 +46,16 @@ export default function ExpressionCarousel({ expressions }: ExpressionCarouselPr
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         {expressions.map((expr, i) => (
-          <div key={i} className="snap-center flex-shrink-0 w-full">
-            <ExpressionCard {...expr} />
+          <div key={expr.id || i} className="snap-center flex-shrink-0 w-full">
+            <ExpressionCard
+              id={expr.id}
+              keyword={expr.keyword}
+              meaning={expr.meaning}
+              example={expr.example}
+              highlightWord={expr.highlightWord}
+              bookmarked={expr.saved}
+              onBookmarkToggle={onBookmarkToggle}
+            />
           </div>
         ))}
       </div>
