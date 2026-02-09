@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useLanguage } from "@/lib/i18n/context";
 
 interface ExpressionCardProps {
   id?: string;
@@ -40,6 +41,7 @@ export default function ExpressionCard({
   bookmarked: initialBookmarked = false,
   onBookmarkToggle,
 }: ExpressionCardProps) {
+  const { ttsVoice, ttsStyle } = useLanguage();
   const [bookmarked, setBookmarked] = useState(initialBookmarked);
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -58,7 +60,7 @@ export default function ExpressionCard({
       const res = await fetch("/api/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: keyword }),
+        body: JSON.stringify({ text: keyword, voice: ttsVoice, style: ttsStyle }),
       });
 
       if (!res.ok) throw new Error("TTS failed");

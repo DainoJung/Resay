@@ -56,6 +56,15 @@ export const translations = {
     "settings.targetLanguage": "학습 언어",
     "settings.targetLanguageDescription": "피드백을 받을 언어를 선택하세요",
     "settings.comingSoon": "지원 예정",
+    "settings.ttsVoice": "음성",
+    "settings.ttsVoiceDescription": "TTS 음성을 선택하세요",
+    "settings.ttsStyle": "말하기 스타일",
+    "settings.ttsStyleDescription": "TTS 속도와 톤을 조절하세요",
+    "settings.ttsStyle.normal": "보통",
+    "settings.ttsStyle.slow": "느리게",
+    "settings.ttsStyle.fast": "빠르게",
+    "settings.ttsStyle.calm": "차분하게",
+    "settings.ttsStyle.energetic": "활기차게",
   },
   ja: {
     // Nav
@@ -112,6 +121,15 @@ export const translations = {
     "settings.targetLanguage": "学習言語",
     "settings.targetLanguageDescription": "フィードバックを受ける言語を選択してください",
     "settings.comingSoon": "対応予定",
+    "settings.ttsVoice": "音声",
+    "settings.ttsVoiceDescription": "TTS音声を選択してください",
+    "settings.ttsStyle": "話し方スタイル",
+    "settings.ttsStyleDescription": "TTSの速度とトーンを調整してください",
+    "settings.ttsStyle.normal": "普通",
+    "settings.ttsStyle.slow": "ゆっくり",
+    "settings.ttsStyle.fast": "速く",
+    "settings.ttsStyle.calm": "穏やかに",
+    "settings.ttsStyle.energetic": "元気に",
   },
 } as const;
 

@@ -184,13 +184,26 @@ export async function generateTitle(transcript: string, lang: string = "ko"): Pr
   return response.text?.trim().slice(0, 30) || "";
 }
 
-export async function generateTTS(text: string): Promise<{ audioData: string; mimeType: string }> {
+const stylePrompts: Record<string, string> = {
+  slow: "Read this slowly and clearly:",
+  fast: "Read this at a quick pace:",
+  calm: "Read this in a calm, gentle tone:",
+  energetic: "Read this with energy and enthusiasm:",
+};
+
+export async function generateTTS(
+  text: string,
+  voice?: string,
+  style?: string,
+): Promise<{ audioData: string; mimeType: string }> {
+  const prefix = style && stylePrompts[style] ? `${stylePrompts[style]} ` : "";
+
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash-preview-tts",
     contents: [
       {
         role: "user",
-        parts: [{ text }],
+        parts: [{ text: `${prefix}${text}` }],
       },
     ],
     config: {
@@ -198,7 +211,7 @@ export async function generateTTS(text: string): Promise<{ audioData: string; mi
       speechConfig: {
         voiceConfig: {
           prebuiltVoiceConfig: {
-            voiceName: "Kore",
+            voiceName: voice || "Puck",
           },
         },
       },

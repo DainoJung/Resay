@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useLanguage } from "@/lib/i18n/context";
 
 interface SentenceCardProps {
   id?: string;
@@ -17,6 +18,7 @@ export default function SentenceCard({
   bookmarked: initialBookmarked = false,
   onBookmarkToggle,
 }: SentenceCardProps) {
+  const { ttsVoice, ttsStyle } = useLanguage();
   const [bookmarked, setBookmarked] = useState(initialBookmarked);
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -44,7 +46,7 @@ export default function SentenceCard({
       const res = await fetch("/api/tts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: english }),
+        body: JSON.stringify({ text: english, voice: ttsVoice, style: ttsStyle }),
       });
 
       if (!res.ok) throw new Error("TTS failed");

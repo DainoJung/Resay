@@ -1,7 +1,8 @@
 "use client";
 
+import { useState, useRef } from "react";
 import Link from "next/link";
-import { useLanguage } from "@/lib/i18n/context";
+import { useLanguage, TTSVoice, TTSStyle } from "@/lib/i18n/context";
 import { Language } from "@/lib/i18n/translations";
 
 const languages: { code: Language; flag: string; label: string }[] = [
@@ -15,8 +16,62 @@ const targetLanguages: { code: string; flag: string; label: string; available: b
   { code: "zh", flag: "\uD83C\uDDE8\uD83C\uDDF3", label: "\u4E2D\u6587", available: false },
 ];
 
+const voices: { id: TTSVoice; label: string }[] = [
+  { id: "Zephyr", label: "Zephyr" },
+  { id: "Puck", label: "Puck" },
+  { id: "Charon", label: "Charon" },
+  { id: "Fenrir", label: "Fenrir" },
+  { id: "Leda", label: "Leda" },
+  { id: "Orus", label: "Orus" },
+  { id: "Aoede", label: "Aoede" },
+];
+
+const styles: { id: TTSStyle; labelKey: "settings.ttsStyle.normal" | "settings.ttsStyle.slow" | "settings.ttsStyle.fast" | "settings.ttsStyle.calm" | "settings.ttsStyle.energetic" }[] = [
+  { id: "normal", labelKey: "settings.ttsStyle.normal" },
+  { id: "slow", labelKey: "settings.ttsStyle.slow" },
+  { id: "fast", labelKey: "settings.ttsStyle.fast" },
+  { id: "calm", labelKey: "settings.ttsStyle.calm" },
+  { id: "energetic", labelKey: "settings.ttsStyle.energetic" },
+];
+
 export default function SettingsPage() {
-  const { lang, setLang, t, userName, setUserName } = useLanguage();
+  const { lang, setLang, t, userName, setUserName, ttsVoice, setTtsVoice, ttsStyle, setTtsStyle } = useLanguage();
+  const [previewingVoice, setPreviewingVoice] = useState<string | null>(null);
+  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  const handlePreviewVoice = async (voiceId: TTSVoice) => {
+    // Stop current preview
+    if (previewAudioRef.current) {
+      previewAudioRef.current.pause();
+      previewAudioRef.current = null;
+    }
+    if (previewingVoice === voiceId) {
+      setPreviewingVoice(null);
+      return;
+    }
+
+    setPreviewingVoice(voiceId);
+    try {
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: "Hi there! How are you doing today?", voice: voiceId }),
+      });
+      if (!res.ok) throw new Error("TTS failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      previewAudioRef.current = audio;
+      audio.onended = () => {
+        setPreviewingVoice(null);
+        previewAudioRef.current = null;
+        URL.revokeObjectURL(url);
+      };
+      await audio.play();
+    } catch {
+      setPreviewingVoice(null);
+    }
+  };
 
   return (
     <div className="px-4 pt-6 pb-24 min-h-screen max-w-md mx-auto">
@@ -54,11 +109,10 @@ export default function SettingsPage() {
             return (
               <div
                 key={code}
-                className={`rounded-2xl border px-3 py-3 transition-colors ${
-                  isActive
-                    ? "border-blue-400 bg-blue-50"
-                    : "border-gray-200 bg-gray-50 opacity-60"
-                }`}
+                className={`rounded-2xl border px-3 py-3 transition-colors ${isActive
+                  ? "border-blue-400 bg-blue-50"
+                  : "border-gray-200 bg-gray-50 opacity-60"
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <span className="text-xl">{flag}</span>
@@ -82,7 +136,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Language setting */}
-      <div className="space-y-2">
+      <div className="space-y-2 mb-8">
         <h2 className="text-sm font-medium text-gray-500 px-1">{t("settings.language")}</h2>
         <p className="text-xs text-gray-400 px-1 mb-3">{t("settings.languageDescription")}</p>
 
@@ -93,11 +147,10 @@ export default function SettingsPage() {
               <button
                 key={code}
                 onClick={() => setLang(code)}
-                className={`rounded-2xl border px-3 py-3 transition-colors ${
-                  isActive
-                    ? "border-blue-400 bg-blue-50"
-                    : "border-gray-200 bg-white hover:border-gray-300"
-                }`}
+                className={`rounded-2xl border px-3 py-3 transition-colors ${isActive
+                  ? "border-blue-400 bg-blue-50"
+                  : "border-gray-200 bg-white hover:border-gray-300"
+                  }`}
               >
                 <div className="flex items-center gap-2">
                   <span className="text-xl">{flag}</span>
@@ -110,6 +163,78 @@ export default function SettingsPage() {
                     </svg>
                   )}
                 </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* TTS Voice setting */}
+      <div className="space-y-2 mb-8">
+        <h2 className="text-sm font-medium text-gray-500 px-1">{t("settings.ttsVoice")}</h2>
+        <p className="text-xs text-gray-400 px-1 mb-3">{t("settings.ttsVoiceDescription")}</p>
+
+        <div className="grid grid-cols-2 gap-2">
+          {voices.map(({ id, label }) => {
+            const isActive = ttsVoice === id;
+            const isPreviewing = previewingVoice === id;
+            return (
+              <button
+                key={id}
+                onClick={() => setTtsVoice(id)}
+                className={`rounded-2xl border px-3 py-3 transition-colors ${isActive
+                  ? "border-blue-400 bg-blue-50"
+                  : "border-gray-200 bg-white hover:border-gray-300"
+                  }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className={`text-sm font-medium flex-1 text-left ${isActive ? "text-blue-600" : "text-gray-700"}`}>
+                    {label}
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePreviewVoice(id);
+                    }}
+                    className={`flex-shrink-0 transition-colors ${isPreviewing ? "text-blue-500" : "text-gray-400 hover:text-gray-600"
+                      }`}
+                  >
+                    {isPreviewing ? (
+                      <svg className="w-4 h-4 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
+                        <rect x="6" y="4" width="4" height="16" rx="1" />
+                        <rect x="14" y="4" width="4" height="16" rx="1" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* TTS Style setting */}
+      <div className="space-y-2">
+        <h2 className="text-sm font-medium text-gray-500 px-1">{t("settings.ttsStyle")}</h2>
+        <p className="text-xs text-gray-400 px-1 mb-3">{t("settings.ttsStyleDescription")}</p>
+
+        <div className="flex flex-wrap gap-2">
+          {styles.map(({ id, labelKey }) => {
+            const isActive = ttsStyle === id;
+            return (
+              <button
+                key={id}
+                onClick={() => setTtsStyle(id)}
+                className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${isActive
+                  ? "border-blue-400 bg-blue-50 text-blue-600"
+                  : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
+                  }`}
+              >
+                {t(labelKey)}
               </button>
             );
           })}

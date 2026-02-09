@@ -3,13 +3,17 @@ import { generateTTS } from "@/lib/gemini";
 
 export async function POST(req: NextRequest) {
   try {
-    const { text } = (await req.json()) as { text: string };
+    const { text, voice, style } = (await req.json()) as {
+      text: string;
+      voice?: string;
+      style?: string;
+    };
 
     if (!text || text.length > 4000) {
       return NextResponse.json({ error: "Invalid text" }, { status: 400 });
     }
 
-    const { audioData, mimeType } = await generateTTS(text);
+    const { audioData, mimeType } = await generateTTS(text, voice, style);
 
     const buffer = Buffer.from(audioData, "base64");
     return new NextResponse(buffer, {
