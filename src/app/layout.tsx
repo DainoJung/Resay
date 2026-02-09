@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import BottomNav from "@/components/BottomNav";
 import ClientProviders from "@/components/ClientProviders";
 
 const geistSans = localFont({
@@ -31,7 +30,6 @@ export default function RootLayout({
       <body className={`${geistSans.variable} font-sans antialiased bg-gray-50 text-gray-900`}>
         <ClientProviders>
           {children}
-          <BottomNav />
         </ClientProviders>
       </body>
     </html>
