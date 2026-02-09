@@ -21,7 +21,13 @@
       "Bash(git checkout:*)",
       "Bash(npx vercel logs:*)",
       "Bash(vercel:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "WebFetch(domain:docs.cloud.google.com)",
+      "Bash(node -e \"\nconst { GoogleGenAI } = require\\(''@google/genai''\\);\nconst ai = new GoogleGenAI\\({ apiKey: process.env.GEMINI_API_KEY || ''AIzaSyCar05s2AawkPRhPI0Ku_rWfEXHiDiFocU'' }\\);\n\n\\(async \\(\\) => {\n  try {\n    const response = await ai.models.generateContent\\({\n      model: ''gemini-2.5-flash-tts'',\n      contents: [{ role: ''user'', parts: [{ text: ''Hello, how are you?'' }] }],\n      config: {\n        responseModalities: [''AUDIO''],\n        speechConfig: {\n          voiceConfig: {\n            prebuiltVoiceConfig: { voiceName: ''Kore'' }\n          }\n        }\n      }\n    }\\);\n    console.log\\(''Response keys:'', Object.keys\\(response\\)\\);\n    console.log\\(''Candidates:'', JSON.stringify\\(response.candidates?.[0]?.content?.parts?.[0]?.inlineData ? ''HAS AUDIO DATA'' : response.candidates?.[0]?.content?.parts?.[0]\\)\\);\n    const part = response.candidates?.[0]?.content?.parts?.[0];\n    if \\(part?.inlineData\\) {\n      console.log\\(''MIME:'', part.inlineData.mimeType\\);\n      console.log\\(''Data length:'', part.inlineData.data?.length\\);\n    }\n  } catch \\(err\\) {\n    console.error\\(''Error:'', err.message\\);\n    console.error\\(''Full:'', JSON.stringify\\(err, null, 2\\)\\);\n  }\n}\\)\\(\\);\n\")",
+      "mcp__claude_ai_Context_7__resolve-library-id",
+      "mcp__claude_ai_Context_7__query-docs",
+      "WebFetch(domain:ai.google.dev)",
+      "Bash(cat:*)"
     ]
   }
 }

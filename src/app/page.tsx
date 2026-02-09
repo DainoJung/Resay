@@ -223,6 +223,24 @@ export default function Home() {
         </div>
       )}
 
+      {/* History nav */}
+      {!isProcessing && status !== "selecting-speaker" && (
+        <nav className="fixed bottom-0 left-0 right-0 safe-area-bottom z-0">
+          <div className="flex items-end justify-end max-w-md mx-auto px-6 py-2">
+            <Link
+              href="/history"
+              className="flex flex-col items-center py-2 px-4 text-gray-400"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M7 16l4-4 4 4 4-8" />
+              </svg>
+              <span className="text-xs mt-0.5">{t("nav.history")}</span>
+            </Link>
+          </div>
+        </nav>
+      )}
+
       {/* Stop confirmation popup */}
       {showStopConfirm && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-6">
