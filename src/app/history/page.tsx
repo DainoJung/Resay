@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { Session, Utterance } from "@/types";
 import HistoryList from "@/components/HistoryList";
 import ChatView from "@/components/ChatView";
+import AudioPlayer from "@/components/AudioPlayer";
 import SavedView from "@/components/history/SavedView";
 import ExpressionCarousel from "@/components/history/ExpressionCarousel";
 import SpeakerSelector from "@/components/SpeakerSelector";
@@ -34,6 +35,7 @@ function HistoryContent() {
   const [retryingId, setRetryingId] = useState<string | null>(null);
   const [retryError, setRetryError] = useState<string | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [currentTimeMs, setCurrentTimeMs] = useState(0);
   const [retrySpeakerData, setRetrySpeakerData] = useState<{
     sessionId: string;
     speakers: string[];
@@ -273,6 +275,16 @@ function HistoryContent() {
           <div className="flex-1 h-px bg-gray-200" />
         </div>
 
+        {/* Audio Player */}
+        {selectedSession.audio_url && selectedSession.status === "completed" && (
+          <div className="mb-4">
+            <AudioPlayer
+              audioUrl={selectedSession.audio_url}
+              onTimeUpdate={setCurrentTimeMs}
+            />
+          </div>
+        )}
+
         {/* Chat content */}
         {hasChat && selectedSession.feedbacks ? (
           <ChatView
@@ -281,6 +293,7 @@ function HistoryContent() {
             feedbacks={selectedSession.feedbacks}
             onSaveSentence={handleSentenceBookmark}
             savedFeedbackIds={savedFeedbackIds}
+            currentTimeMs={selectedSession.audio_url ? currentTimeMs : undefined}
           />
         ) : selectedSession.feedbacks && selectedSession.feedbacks.length > 0 ? (
           <div className="space-y-3">

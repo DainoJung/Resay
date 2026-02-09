@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useEffect } from "react";
 import { Feedback } from "@/types";
 
 interface ChatBubbleProps {
@@ -8,13 +9,24 @@ interface ChatBubbleProps {
   feedback?: Feedback;
   onSaveSentence?: (feedbackId: string) => void;
   isSaved?: boolean;
+  isActive?: boolean;
 }
 
-export default function ChatBubble({ text, isMe, feedback, onSaveSentence, isSaved }: ChatBubbleProps) {
+export default function ChatBubble({ text, isMe, feedback, onSaveSentence, isSaved, isActive }: ChatBubbleProps) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isActive && ref.current) {
+      ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [isActive]);
+
   if (!isMe) {
     return (
-      <div className="flex justify-start">
-        <div className="max-w-[85%] bg-white rounded-2xl rounded-tl-md px-4 py-3 shadow-sm border border-gray-100">
+      <div ref={ref} className="flex justify-start">
+        <div className={`max-w-[85%] bg-white rounded-2xl rounded-tl-md px-4 py-3 shadow-sm border transition-all duration-200 ${
+          isActive ? "border-gray-300 ring-2 ring-gray-200" : "border-gray-100"
+        }`}>
           <p className="text-[15px] text-gray-800 leading-relaxed">{text}</p>
         </div>
       </div>
@@ -22,8 +34,10 @@ export default function ChatBubble({ text, isMe, feedback, onSaveSentence, isSav
   }
 
   return (
-    <div className="flex flex-col items-end gap-1.5">
-      <div className="max-w-[85%] bg-blue-500 rounded-2xl rounded-tr-md px-4 py-3">
+    <div ref={ref} className="flex flex-col items-end gap-1.5">
+      <div className={`max-w-[85%] bg-blue-500 rounded-2xl rounded-tr-md px-4 py-3 transition-all duration-200 ${
+        isActive ? "ring-2 ring-blue-300" : ""
+      }`}>
         <p className="text-[15px] text-white leading-relaxed">{text}</p>
       </div>
 

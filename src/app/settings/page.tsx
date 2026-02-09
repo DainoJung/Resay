@@ -179,10 +179,10 @@ export default function SettingsPage() {
             const isActive = ttsVoice === id;
             const isPreviewing = previewingVoice === id;
             return (
-              <button
+              <div
                 key={id}
                 onClick={() => setTtsVoice(id)}
-                className={`rounded-2xl border px-3 py-3 transition-colors ${isActive
+                className={`rounded-2xl border px-3 py-3 transition-colors cursor-pointer ${isActive
                   ? "border-blue-400 bg-blue-50"
                   : "border-gray-200 bg-white hover:border-gray-300"
                   }`}
@@ -211,7 +211,7 @@ export default function SettingsPage() {
                     )}
                   </button>
                 </div>
-              </button>
+              </div>
             );
           })}
         </div>

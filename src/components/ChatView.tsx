@@ -9,9 +9,17 @@ interface ChatViewProps {
   feedbacks: Feedback[];
   onSaveSentence?: (feedbackId: string) => void;
   savedFeedbackIds?: Set<string>;
+  currentTimeMs?: number;
 }
 
-export default function ChatView({ utterances, mySpeaker, feedbacks, onSaveSentence, savedFeedbackIds }: ChatViewProps) {
+function formatTimestamp(ms: number): string {
+  const totalSec = Math.floor(ms / 1000);
+  const min = Math.floor(totalSec / 60);
+  const sec = totalSec % 60;
+  return `${min}:${sec.toString().padStart(2, "0")}`;
+}
+
+export default function ChatView({ utterances, mySpeaker, feedbacks, onSaveSentence, savedFeedbackIds, currentTimeMs }: ChatViewProps) {
 
   function findFeedback(utteranceText: string): Feedback | undefined {
     return feedbacks.find((fb) => {
@@ -21,6 +29,12 @@ export default function ChatView({ utterances, mySpeaker, feedbacks, onSaveSente
     });
   }
 
+  const activeIndex = currentTimeMs != null
+    ? utterances.findIndex(
+        (u) => u.start != null && u.end != null && currentTimeMs >= u.start && currentTimeMs < u.end
+      )
+    : -1;
+
   return (
     <div className="space-y-3">
       {utterances.map((utterance, i) => {
@@ -28,14 +42,19 @@ export default function ChatView({ utterances, mySpeaker, feedbacks, onSaveSente
         const feedback = isMe ? findFeedback(utterance.text) : undefined;
 
         return (
-          <ChatBubble
-            key={i}
-            text={utterance.text}
-            isMe={isMe}
-            feedback={feedback}
-            onSaveSentence={onSaveSentence}
-            isSaved={feedback ? savedFeedbackIds?.has(feedback.id) : false}
-          />
+          <div key={i}>
+            {utterance.start != null && currentTimeMs != null && (
+              <p className="text-[11px] text-gray-400 mb-1 ml-1">{formatTimestamp(utterance.start)}</p>
+            )}
+            <ChatBubble
+              text={utterance.text}
+              isMe={isMe}
+              feedback={feedback}
+              onSaveSentence={onSaveSentence}
+              isSaved={feedback ? savedFeedbackIds?.has(feedback.id) : false}
+              isActive={i === activeIndex}
+            />
+          </div>
         );
       })}
     </div>

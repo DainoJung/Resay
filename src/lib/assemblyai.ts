@@ -87,33 +87,40 @@ export async function transcribeAudio(audioUrl: string): Promise<TranscribeResul
           const match = rawUtterances.find(
             (u) => s.start >= u.start && s.start < u.end
           );
-          return { text: s.text, speaker: match?.speaker || rawUtterances[0]?.speaker || "A" };
+          return { text: s.text, start: s.start, end: s.end, speaker: match?.speaker || rawUtterances[0]?.speaker || "A" };
         });
 
         // Group consecutive sentences by speaker, max 5 per chunk
         utterances = [];
         let currentSpeaker = "";
         let currentTexts: string[] = [];
+        let groupStart = 0;
+        let groupEnd = 0;
 
         for (const s of speakerSentences) {
           if (s.speaker !== currentSpeaker || currentTexts.length >= MAX_SENTENCES) {
             if (currentTexts.length > 0) {
-              utterances.push({ speaker: currentSpeaker, text: currentTexts.join(" ") });
+              utterances.push({ speaker: currentSpeaker, text: currentTexts.join(" "), start: groupStart, end: groupEnd });
             }
             currentSpeaker = s.speaker;
             currentTexts = [s.text];
+            groupStart = s.start;
+            groupEnd = s.end;
           } else {
             currentTexts.push(s.text);
+            groupEnd = s.end;
           }
         }
         if (currentTexts.length > 0) {
-          utterances.push({ speaker: currentSpeaker, text: currentTexts.join(" ") });
+          utterances.push({ speaker: currentSpeaker, text: currentTexts.join(" "), start: groupStart, end: groupEnd });
         }
       } else {
         // Fallback to utterances from main response
         utterances = rawUtterances.map((u) => ({
           speaker: u.speaker,
           text: u.text,
+          start: u.start,
+          end: u.end,
         }));
       }
 
