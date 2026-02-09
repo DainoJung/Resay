@@ -8,9 +8,12 @@ import { useLanguage } from "@/lib/i18n/context";
 interface HistoryListProps {
   sessions: Session[];
   onSelect: (session: Session) => void;
+  onRetry?: (sessionId: string) => void;
+  onDelete?: (sessionId: string) => void;
+  retryingId?: string | null;
 }
 
-export default function HistoryList({ sessions, onSelect }: HistoryListProps) {
+export default function HistoryList({ sessions, onSelect, onRetry, onDelete, retryingId }: HistoryListProps) {
   const { t } = useLanguage();
 
   if (sessions.length === 0) {
@@ -25,7 +28,14 @@ export default function HistoryList({ sessions, onSelect }: HistoryListProps) {
   return (
     <div>
       {sessions.map((session) => (
-        <HistoryItem key={session.id} session={session} onSelect={onSelect} />
+        <HistoryItem
+          key={session.id}
+          session={session}
+          onSelect={onSelect}
+          onRetry={onRetry}
+          onDelete={onDelete}
+          isRetrying={retryingId === session.id}
+        />
       ))}
     </div>
   );

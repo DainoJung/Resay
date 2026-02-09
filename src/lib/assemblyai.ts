@@ -10,15 +10,13 @@ export interface TranscribeResult {
 }
 
 export async function uploadAudio(buffer: Buffer): Promise<string> {
-  const body = buffer as unknown as BodyInit;
-
   const res = await fetch(`${BASE_URL}/upload`, {
     method: "POST",
     headers: {
       authorization: API_KEY,
       "content-type": "application/octet-stream",
     },
-    body,
+    body: new Uint8Array(buffer),
   });
 
   if (!res.ok) {

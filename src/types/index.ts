@@ -38,6 +38,7 @@ export interface Session {
   feedbacks?: Feedback[];
   title?: string | null;
   expressions?: Expression[];
+  status?: string;
 }
 
 export interface GeminiFeedbackItem {

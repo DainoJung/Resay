@@ -1,13 +1,14 @@
 "use client";
 
 import { Suspense, useEffect, useState, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Session, Utterance } from "@/types";
 import HistoryList from "@/components/HistoryList";
 import ChatView from "@/components/ChatView";
 import SavedView from "@/components/history/SavedView";
 import ExpressionCarousel from "@/components/history/ExpressionCarousel";
+import SpeakerSelector from "@/components/SpeakerSelector";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/context";
 
@@ -23,70 +24,79 @@ export default function HistoryPage() {
 
 function HistoryContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const sessionIdParam = searchParams.get("id");
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<MainTab>("calls");
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [savedFeedbackIds, setSavedFeedbackIds] = useState<Set<string>>(new Set());
+  const [retryingId, setRetryingId] = useState<string | null>(null);
+  const [retryError, setRetryError] = useState<string | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [retrySpeakerData, setRetrySpeakerData] = useState<{
+    sessionId: string;
+    speakers: string[];
+    utterances: Utterance[];
+  } | null>(null);
   const { t, lang } = useLanguage();
 
-  useEffect(() => {
-    async function fetchSessions() {
-      const { data: sessionsData } = await supabase
-        .from("sessions")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(50);
+  const fetchSessions = useCallback(async () => {
+    const { data: sessionsData } = await supabase
+      .from("sessions")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(50);
 
-      if (!sessionsData) {
-        setLoading(false);
-        return;
-      }
-
-      const sessionIds = sessionsData.map((s) => s.id);
-      const [{ data: feedbacksData }, { data: expressionsData }] = await Promise.all([
-        supabase
-          .from("feedbacks")
-          .select("*")
-          .in("session_id", sessionIds)
-          .order("created_at", { ascending: true }),
-        supabase
-          .from("expressions")
-          .select("*")
-          .in("session_id", sessionIds)
-          .order("created_at", { ascending: true }),
-      ]);
-
-      const sessionsWithFeedbacks: Session[] = sessionsData.map((session) => ({
-        ...session,
-        utterances:
-          typeof session.utterances === "string"
-            ? JSON.parse(session.utterances)
-            : session.utterances || [],
-        feedbacks: feedbacksData?.filter((fb) => fb.session_id === session.id) || [],
-        expressions: expressionsData?.filter((ex) => ex.session_id === session.id) || [],
-      }));
-
-      setSessions(sessionsWithFeedbacks);
-
-      // Auto-select session from query param
-      if (sessionIdParam) {
-        const target = sessionsWithFeedbacks.find((s) => s.id === sessionIdParam);
-        if (target) {
-          setSelectedSession(target);
-          const savedIds = new Set(
-            (target.feedbacks || []).filter((fb) => fb.saved).map((fb) => fb.id)
-          );
-          setSavedFeedbackIds(savedIds);
-        }
-      }
-
+    if (!sessionsData) {
       setLoading(false);
+      return;
     }
 
-    fetchSessions();
+    const sessionIds = sessionsData.map((s) => s.id);
+    const [{ data: feedbacksData }, { data: expressionsData }] = await Promise.all([
+      supabase
+        .from("feedbacks")
+        .select("*")
+        .in("session_id", sessionIds)
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("expressions")
+        .select("*")
+        .in("session_id", sessionIds)
+        .order("created_at", { ascending: true }),
+    ]);
+
+    const sessionsWithFeedbacks: Session[] = sessionsData.map((session) => ({
+      ...session,
+      utterances:
+        typeof session.utterances === "string"
+          ? JSON.parse(session.utterances)
+          : session.utterances || [],
+      feedbacks: feedbacksData?.filter((fb) => fb.session_id === session.id) || [],
+      expressions: expressionsData?.filter((ex) => ex.session_id === session.id) || [],
+    }));
+
+    setSessions(sessionsWithFeedbacks);
+
+    // Auto-select session from query param
+    if (sessionIdParam) {
+      const target = sessionsWithFeedbacks.find((s) => s.id === sessionIdParam);
+      if (target && target.status !== "transcription_failed") {
+        setSelectedSession(target);
+        const savedIds = new Set(
+          (target.feedbacks || []).filter((fb) => fb.saved).map((fb) => fb.id)
+        );
+        setSavedFeedbackIds(savedIds);
+      }
+    }
+
+    setLoading(false);
   }, [sessionIdParam]);
+
+  useEffect(() => {
+    fetchSessions();
+  }, [fetchSessions]);
 
   const handleSelectSession = useCallback((session: Session) => {
     setSelectedSession(session);
@@ -95,6 +105,82 @@ function HistoryContent() {
     );
     setSavedFeedbackIds(savedIds);
   }, []);
+
+  const handleRetry = useCallback(async (sessionId: string) => {
+    setRetryingId(sessionId);
+    setRetryError(null);
+    try {
+      const res = await fetch("/api/retry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId, lang }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error);
+      }
+
+      if (data.needsSpeaker) {
+        setRetrySpeakerData({
+          sessionId,
+          speakers: data.speakers,
+          utterances: data.utterances,
+        });
+        setRetryingId(null);
+        return;
+      }
+
+      // Success - refresh and navigate to session
+      await fetchSessions();
+      router.push(`/history?id=${sessionId}`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : t("error.generic");
+      setRetryError(msg);
+    } finally {
+      setRetryingId(null);
+    }
+  }, [lang, fetchSessions, router, t]);
+
+  const handleRetrySpeakerSelect = useCallback(async (speaker: string) => {
+    if (!retrySpeakerData) return;
+    const { sessionId } = retrySpeakerData;
+    setRetrySpeakerData(null);
+    setRetryingId(sessionId);
+
+    try {
+      const res = await fetch("/api/retry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId, lang, mySpeaker: speaker }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error);
+      }
+
+      await fetchSessions();
+      router.push(`/history?id=${sessionId}`);
+    } catch (err) {
+      console.error("Retry speaker select failed:", err);
+    } finally {
+      setRetryingId(null);
+    }
+  }, [retrySpeakerData, lang, fetchSessions, router]);
+
+  const handleDelete = useCallback(async () => {
+    if (!deleteTargetId) return;
+    const id = deleteTargetId;
+    setDeleteTargetId(null);
+    setSessions((prev) => prev.filter((s) => s.id !== id));
+
+    await fetch("/api/session", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sessionId: id }),
+    });
+  }, [deleteTargetId]);
 
   const handleExpressionBookmark = useCallback(async (id: string, saved: boolean) => {
     await fetch("/api/bookmark", {
@@ -121,6 +207,19 @@ function HistoryContent() {
       body: JSON.stringify({ table: "feedbacks", id: feedbackId, saved: newSaved, lang }),
     });
   }, [savedFeedbackIds, lang]);
+
+  // Speaker selection modal for retry
+  if (retrySpeakerData) {
+    return (
+      <div className="px-4 pt-6 pb-24 min-h-screen max-w-md mx-auto flex items-center justify-center">
+        <SpeakerSelector
+          speakers={retrySpeakerData.speakers}
+          utterances={retrySpeakerData.utterances}
+          onSelect={handleRetrySpeakerSelect}
+        />
+      </div>
+    );
+  }
 
   // Detail view for a selected session
   if (selectedSession) {
@@ -167,7 +266,7 @@ function HistoryContent() {
           </div>
         )}
 
-        {/* Divider: 통화 내용 */}
+        {/* Divider */}
         <div className="flex items-center gap-3 mb-6">
           <div className="flex-1 h-px bg-gray-200" />
           <span className="text-sm text-gray-400">{t("history.detail.callContent")}</span>
@@ -253,12 +352,53 @@ function HistoryContent() {
               ))}
             </div>
           ) : (
-            <HistoryList sessions={sessions} onSelect={handleSelectSession} />
+            <>
+              {retryError && (
+                <div className="bg-red-50 text-red-700 text-sm rounded-xl p-4 mb-4">
+                  {retryError}
+                </div>
+              )}
+              <HistoryList
+                sessions={sessions}
+                onSelect={handleSelectSession}
+                onRetry={handleRetry}
+                onDelete={(id) => setDeleteTargetId(id)}
+                retryingId={retryingId}
+              />
+            </>
           )}
         </>
       )}
 
       {activeTab === "saved" && <SavedView />}
+
+      {/* Delete confirmation dialog */}
+      {deleteTargetId && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-6">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-xs shadow-xl">
+            <p className="text-base font-semibold text-gray-900 text-center mb-2">
+              {t("history.deleteConfirm")}
+            </p>
+            <p className="text-sm text-gray-500 text-center mb-6">
+              {t("history.deleteConfirmDesc")}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteTargetId(null)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+              >
+                {t("history.cancel")}
+              </button>
+              <button
+                onClick={handleDelete}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors"
+              >
+                {t("history.delete")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

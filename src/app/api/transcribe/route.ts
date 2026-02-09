@@ -1,17 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uploadAudio, transcribeAudio } from "@/lib/assemblyai";
+import { supabaseAdmin } from "@/lib/supabase-server";
 
 export async function POST(req: NextRequest) {
+  let buffer: Buffer | null = null;
+  let fileExt = "webm";
+  let audioDuration: number | null = null;
+
   try {
     const formData = await req.formData();
     const audioFile = formData.get("audio") as File | null;
+    const durationStr = formData.get("duration") as string | null;
+    audioDuration = durationStr ? parseInt(durationStr, 10) : null;
 
     if (!audioFile) {
       console.error("Transcribe: No audio file in formData");
       return NextResponse.json({ error: "No audio file provided" }, { status: 400 });
     }
 
-    const buffer = Buffer.from(await audioFile.arrayBuffer());
+    buffer = Buffer.from(await audioFile.arrayBuffer());
+    fileExt = audioFile.name.split(".").pop() || "webm";
     console.log(`Transcribe: file=${audioFile.name}, type=${audioFile.type}, size=${buffer.length}`);
 
     if (buffer.length === 0) {
@@ -42,9 +50,64 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     console.error("Transcribe error:", message);
+
+    let sessionId: string | undefined;
+    if (buffer && buffer.length > 0) {
+      try {
+        sessionId = await saveFailedSession(buffer, fileExt, audioDuration);
+      } catch (saveErr) {
+        console.error("Failed to save failed session:", saveErr);
+      }
+    }
+
     return NextResponse.json(
-      { error: `Transcription failed: ${message}` },
+      { error: `Transcription failed: ${message}`, sessionId },
       { status: 500 }
     );
   }
+}
+
+async function saveFailedSession(
+  buffer: Buffer,
+  ext: string,
+  duration: number | null
+): Promise<string> {
+  const { data: session, error: sessionError } = await supabaseAdmin
+    .from("sessions")
+    .insert({
+      transcript: "",
+      status: "transcription_failed",
+      feedback_count: 0,
+      duration: duration || null,
+    })
+    .select("id")
+    .single();
+
+  if (sessionError || !session) {
+    throw new Error("Failed to create session");
+  }
+
+  // Upload audio to Supabase Storage
+  await supabaseAdmin.storage
+    .createBucket("recordings", { public: false })
+    .catch(() => { });
+
+  const storagePath = `${session.id}.${ext}`;
+  const { error: uploadError } = await supabaseAdmin.storage
+    .from("recordings")
+    .upload(storagePath, new Uint8Array(buffer), {
+      contentType: `audio/${ext}`,
+      upsert: true,
+    });
+
+  if (uploadError) {
+    console.error("Storage upload error:", uploadError);
+  } else {
+    await supabaseAdmin
+      .from("sessions")
+      .update({ audio_url: storagePath })
+      .eq("id", session.id);
+  }
+
+  return session.id;
 }

@@ -10,8 +10,9 @@ export const translations = {
     "status.analyzing": "AI가 피드백을 생성하는 중...",
 
     // Home - errors
-    "error.transcribeFailed": "음성 변환 실패",
-    "error.feedbackFailed": "피드백 생성 실패",
+    "error.transcribeFailed": "음성 변환에 실패했습니다. 다시 시도해 주세요.",
+    "error.noSpeech": "음성이 인식되지 않았습니다. 더 크고 명확하게 말해 주세요.",
+    "error.feedbackFailed": "피드백 생성에 실패했습니다. 다시 시도해 주세요.",
     "error.generic": "오류가 발생했습니다.",
 
     // Record stop confirmation
@@ -40,6 +41,13 @@ export const translations = {
     "history.saved.empty": "아직 보관한 항목이 없어요",
     "history.detail.expressions": "내게 딱 맞는 원어민 표현",
     "history.detail.callContent": "통화 내용",
+    "history.transcriptionFailed": "변환 실패",
+    "history.retry": "재시도",
+    "history.retrying": "재시도 중...",
+    "history.delete": "삭제",
+    "history.deleteConfirm": "이 녹음을 삭제할까요?",
+    "history.deleteConfirmDesc": "삭제하면 되돌릴 수 없습니다.",
+    "history.cancel": "취소",
 
     // Audio recorder errors
     "recorder.error": "녹음 중 오류가 발생했습니다.",
@@ -75,8 +83,9 @@ export const translations = {
     "status.analyzing": "AIがフィードバックを生成中...",
 
     // Home - errors
-    "error.transcribeFailed": "音声変換に失敗しました",
-    "error.feedbackFailed": "フィードバック生成に失敗しました",
+    "error.transcribeFailed": "音声変換に失敗しました。もう一度お試しください。",
+    "error.noSpeech": "音声が認識されませんでした。もっとはっきりと話してください。",
+    "error.feedbackFailed": "フィードバック生成に失敗しました。もう一度お試しください。",
     "error.generic": "エラーが発生しました。",
 
     // Record stop confirmation
@@ -105,6 +114,13 @@ export const translations = {
     "history.saved.empty": "まだ保管した項目がありません",
     "history.detail.expressions": "あなたにぴったりのネイティブ表現",
     "history.detail.callContent": "通話内容",
+    "history.transcriptionFailed": "変換失敗",
+    "history.retry": "再試行",
+    "history.retrying": "再試行中...",
+    "history.delete": "削除",
+    "history.deleteConfirm": "この録音を削除しますか？",
+    "history.deleteConfirmDesc": "削除すると元に戻せません。",
+    "history.cancel": "キャンセル",
 
     // Audio recorder errors
     "recorder.error": "録音中にエラーが発生しました。",

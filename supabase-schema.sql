@@ -52,3 +52,6 @@ CREATE POLICY "Public read" ON expressions FOR SELECT USING (true);
 -- 기존 테이블에 새 컬럼 추가 (이미 테이블이 있는 경우)
 -- ALTER TABLE sessions ADD COLUMN utterances TEXT;
 -- ALTER TABLE sessions ADD COLUMN my_speaker TEXT;
+
+-- 변환 실패 재시도 기능
+-- ALTER TABLE sessions ADD COLUMN status TEXT DEFAULT 'completed';

@@ -69,6 +69,7 @@ export default function Home() {
       const ext = blob.type.includes("mp4") ? "mp4" : blob.type.includes("aac") ? "aac" : "webm";
       const formData = new FormData();
       formData.append("audio", blob, `recording.${ext}`);
+      formData.append("duration", String(duration));
 
       const transcribeRes = await fetch("/api/transcribe", {
         method: "POST",
@@ -77,7 +78,16 @@ export default function Home() {
 
       const transcribeData = await transcribeRes.json();
       if (!transcribeRes.ok) {
-        throw new Error(transcribeData.error || t("error.transcribeFailed"));
+        if (transcribeData.sessionId) {
+          router.push("/history");
+          setStatus("idle");
+          return;
+        }
+        const serverError = transcribeData.error || "";
+        if (serverError.includes("no spoken audio") || serverError.includes("Could not recognize speech")) {
+          throw new Error(t("error.noSpeech"));
+        }
+        throw new Error(t("error.transcribeFailed"));
       }
 
       setTranscript(transcribeData.transcript);
