@@ -183,3 +183,63 @@ export async function generateTitle(transcript: string, lang: string = "ko"): Pr
 
   return response.text?.trim().slice(0, 30) || "";
 }
+
+export async function generateTTS(text: string): Promise<{ audioData: string; mimeType: string }> {
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash-preview-tts",
+    contents: [
+      {
+        role: "user",
+        parts: [{ text }],
+      },
+    ],
+    config: {
+      responseModalities: ["AUDIO"],
+      speechConfig: {
+        voiceConfig: {
+          prebuiltVoiceConfig: {
+            voiceName: "Kore",
+          },
+        },
+      },
+    },
+  });
+
+  const part = response.candidates?.[0]?.content?.parts?.[0];
+  if (!part || !("inlineData" in part) || !part.inlineData?.data) {
+    throw new Error("No audio data in TTS response");
+  }
+
+  const pcmBase64 = part.inlineData.data;
+  const pcmBuffer = Buffer.from(pcmBase64, "base64");
+
+  // Wrap raw PCM (24kHz, 16-bit, mono) in WAV header
+  const sampleRate = 24000;
+  const bitsPerSample = 16;
+  const numChannels = 1;
+  const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+  const blockAlign = numChannels * (bitsPerSample / 8);
+  const dataSize = pcmBuffer.length;
+  const headerSize = 44;
+
+  const wavBuffer = Buffer.alloc(headerSize + dataSize);
+  wavBuffer.write("RIFF", 0);
+  wavBuffer.writeUInt32LE(36 + dataSize, 4);
+  wavBuffer.write("WAVE", 8);
+  wavBuffer.write("fmt ", 12);
+  wavBuffer.writeUInt32LE(16, 16);
+  wavBuffer.writeUInt16LE(1, 20); // PCM format
+  wavBuffer.writeUInt16LE(numChannels, 22);
+  wavBuffer.writeUInt32LE(sampleRate, 24);
+  wavBuffer.writeUInt32LE(byteRate, 28);
+  wavBuffer.writeUInt16LE(blockAlign, 32);
+  wavBuffer.writeUInt16LE(bitsPerSample, 34);
+  wavBuffer.write("data", 36);
+  wavBuffer.writeUInt32LE(dataSize, 40);
+  pcmBuffer.copy(wavBuffer, headerSize);
+
+  return {
+    audioData: wavBuffer.toString("base64"),
+    mimeType: "audio/wav",
+  };
+}
