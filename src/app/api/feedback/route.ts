@@ -5,12 +5,13 @@ import { Utterance } from "@/types";
 
 export async function POST(req: NextRequest) {
   try {
-    const { transcript, utterances, mySpeaker, audioUrl, lang } = (await req.json()) as {
+    const { transcript, utterances, mySpeaker, audioUrl, lang, duration } = (await req.json()) as {
       transcript: string;
       utterances: Utterance[];
       mySpeaker: string;
       audioUrl?: string;
       lang?: string;
+      duration?: number;
     };
 
     if (!transcript) {
@@ -19,12 +20,12 @@ export async function POST(req: NextRequest) {
 
     // Filter to only my utterances for feedback
     const myUtterances = utterances.filter((u) => u.speaker === mySpeaker);
-    const myText = myUtterances.map((u) => u.text).join("\n");
+    const myTexts = myUtterances.map((u) => u.text);
 
     // Generate feedback, expressions, and title in parallel
     const userLang = lang || "ko";
     const [feedbackItems, expressionItems, title] = await Promise.all([
-      generateFeedback(myText, userLang),
+      generateFeedback(myTexts, userLang),
       generateExpressions(transcript, userLang),
       generateTitle(transcript, userLang),
     ]);
@@ -39,6 +40,7 @@ export async function POST(req: NextRequest) {
         utterances: JSON.stringify(utterances),
         my_speaker: mySpeaker,
         title: title || null,
+        duration: duration || null,
       })
       .select("id")
       .single();
@@ -58,7 +60,7 @@ export async function POST(req: NextRequest) {
         original: item.original,
         paraphrase: item.paraphrase,
         explanation: item.explanation,
-        category: item.category,
+        is_perfect: item.is_perfect ?? false,
       }));
 
       const { error: feedbackError } = await supabaseAdmin

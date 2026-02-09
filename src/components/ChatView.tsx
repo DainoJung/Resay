@@ -15,7 +15,6 @@ interface ChatViewProps {
 export default function ChatView({ utterances, mySpeaker, feedbacks, onSaveSentence, savedFeedbackIds }: ChatViewProps) {
   const { t } = useLanguage();
 
-  // Match feedback to utterance by finding which utterance contains the original text
   function findFeedback(utteranceText: string): Feedback | undefined {
     return feedbacks.find((fb) => {
       const original = fb.original.toLowerCase().trim();
@@ -24,7 +23,7 @@ export default function ChatView({ utterances, mySpeaker, feedbacks, onSaveSente
     });
   }
 
-  const corrections = feedbacks.filter((fb) => fb.category !== "perfect");
+  const corrections = feedbacks.filter((fb) => !fb.is_perfect);
 
   return (
     <div className="space-y-3">

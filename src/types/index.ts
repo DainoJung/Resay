@@ -10,8 +10,9 @@ export interface Feedback {
   original: string;
   paraphrase: string;
   explanation: string;
-  category: "grammar" | "vocabulary" | "expression" | "pronunciation" | "perfect" | null;
+  is_perfect: boolean;
   saved?: boolean;
+  translation?: string;
 }
 
 export interface Expression {
@@ -43,7 +44,7 @@ export interface GeminiFeedbackItem {
   original: string;
   paraphrase: string;
   explanation: string;
-  category: "grammar" | "vocabulary" | "expression" | "pronunciation" | "perfect";
+  is_perfect: boolean;
 }
 
 export interface GeminiExpressionItem {
