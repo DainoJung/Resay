@@ -22,8 +22,8 @@ For each utterance, provide:
 - "explanation": ${langInstruction}
 - "is_perfect": true if the utterance is already natural and correct, false if it needs improvement
 
-If is_perfect is false, give a CONCISE explanation (2-3 sentences): what's wrong and how the paraphrase fixes it.
-If is_perfect is true, keep the explanation SHORT (1 sentence): a brief compliment or one alternative expression.
+If is_perfect is false, give a detailed explanation (4-5 sentences): what's wrong and how the paraphrase fixes it.
+If is_perfect is true, give a CONCISE explanation (2-3 sentences): a brief compliment and alternative expressions.
 
 Respond with ONLY a JSON array. No markdown, no code blocks, no extra text.
 You MUST return exactly one item per utterance.
