@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Session, Utterance } from "@/types";
 import HistoryList from "@/components/HistoryList";
@@ -13,12 +14,22 @@ import { useLanguage } from "@/lib/i18n/context";
 type MainTab = "calls" | "saved";
 
 export default function HistoryPage() {
+  return (
+    <Suspense fallback={null}>
+      <HistoryContent />
+    </Suspense>
+  );
+}
+
+function HistoryContent() {
+  const searchParams = useSearchParams();
+  const sessionIdParam = searchParams.get("id");
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<MainTab>("calls");
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [savedFeedbackIds, setSavedFeedbackIds] = useState<Set<string>>(new Set());
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   useEffect(() => {
     async function fetchSessions() {
@@ -58,11 +69,24 @@ export default function HistoryPage() {
       }));
 
       setSessions(sessionsWithFeedbacks);
+
+      // Auto-select session from query param
+      if (sessionIdParam) {
+        const target = sessionsWithFeedbacks.find((s) => s.id === sessionIdParam);
+        if (target) {
+          setSelectedSession(target);
+          const savedIds = new Set(
+            (target.feedbacks || []).filter((fb) => fb.saved).map((fb) => fb.id)
+          );
+          setSavedFeedbackIds(savedIds);
+        }
+      }
+
       setLoading(false);
     }
 
     fetchSessions();
-  }, []);
+  }, [sessionIdParam]);
 
   const handleSelectSession = useCallback((session: Session) => {
     setSelectedSession(session);
@@ -94,9 +118,9 @@ export default function HistoryPage() {
     await fetch("/api/bookmark", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ table: "feedbacks", id: feedbackId, saved: newSaved }),
+      body: JSON.stringify({ table: "feedbacks", id: feedbackId, saved: newSaved, lang }),
     });
-  }, [savedFeedbackIds]);
+  }, [savedFeedbackIds, lang]);
 
   // Detail view for a selected session
   if (selectedSession) {
@@ -108,7 +132,12 @@ export default function HistoryPage() {
       <div className="px-4 pt-6 pb-24 min-h-screen max-w-md mx-auto">
         {/* Back button */}
         <button
-          onClick={() => setSelectedSession(null)}
+          onClick={() => {
+            setSelectedSession(null);
+            if (sessionIdParam) {
+              window.history.replaceState(null, "", "/history");
+            }
+          }}
           className="flex items-center gap-1 text-sm text-gray-500 mb-6"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

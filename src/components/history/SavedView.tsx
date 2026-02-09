@@ -40,7 +40,7 @@ export default function SavedView() {
           .order("created_at", { ascending: false }),
         supabase
           .from("feedbacks")
-          .select("id, paraphrase, explanation")
+          .select("id, paraphrase, translation")
           .eq("saved", true)
           .order("created_at", { ascending: false }),
       ]);
@@ -50,7 +50,7 @@ export default function SavedView() {
         (fbData || []).map((fb) => ({
           id: fb.id,
           english: fb.paraphrase,
-          korean: fb.explanation,
+          korean: fb.translation || "",
         }))
       );
       setLoading(false);
