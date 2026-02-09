@@ -67,7 +67,11 @@ export async function transcribeAudio(audioUrl: string): Promise<TranscribeResul
     const result = await pollRes.json();
 
     if (result.status === "completed") {
-      // Fetch sentence-level data for accurate splitting
+      // Get speaker-labeled utterances from main response
+      const rawUtterances: { speaker: string; text: string; start: number; end: number }[] =
+        result.utterances || [];
+
+      // Fetch sentence-level data for finer splitting
       const sentencesRes = await fetch(`${BASE_URL}/transcript/${id}/sentences`, {
         headers: { authorization: API_KEY },
       });
@@ -77,15 +81,23 @@ export async function transcribeAudio(audioUrl: string): Promise<TranscribeResul
 
       if (sentencesRes.ok) {
         const { sentences } = await sentencesRes.json() as {
-          sentences: { speaker: string; text: string }[];
+          sentences: { text: string; start: number; end: number }[];
         };
+
+        // Map each sentence to a speaker using timestamp overlap with utterances
+        const speakerSentences = sentences.map((s) => {
+          const match = rawUtterances.find(
+            (u) => s.start >= u.start && s.start < u.end
+          );
+          return { text: s.text, speaker: match?.speaker || rawUtterances[0]?.speaker || "A" };
+        });
 
         // Group consecutive sentences by speaker, max 5 per chunk
         utterances = [];
         let currentSpeaker = "";
         let currentTexts: string[] = [];
 
-        for (const s of sentences) {
+        for (const s of speakerSentences) {
           if (s.speaker !== currentSpeaker || currentTexts.length >= MAX_SENTENCES) {
             if (currentTexts.length > 0) {
               utterances.push({ speaker: currentSpeaker, text: currentTexts.join(" ") });
@@ -100,13 +112,11 @@ export async function transcribeAudio(audioUrl: string): Promise<TranscribeResul
           utterances.push({ speaker: currentSpeaker, text: currentTexts.join(" ") });
         }
       } else {
-        // Fallback to utterances if sentences endpoint fails
-        utterances = (result.utterances || []).map(
-          (u: { speaker: string; text: string }) => ({
-            speaker: u.speaker,
-            text: u.text,
-          })
-        );
+        // Fallback to utterances from main response
+        utterances = rawUtterances.map((u) => ({
+          speaker: u.speaker,
+          text: u.text,
+        }));
       }
 
       const speakers = Array.from(new Set(utterances.map((u) => u.speaker)));
