@@ -67,13 +67,47 @@ export async function transcribeAudio(audioUrl: string): Promise<TranscribeResul
     const result = await pollRes.json();
 
     if (result.status === "completed") {
-      console.log("Speaker labels result:", JSON.stringify(result.utterances?.map((u: { speaker: string; text: string }) => ({ speaker: u.speaker, text: u.text.slice(0, 40) })), null, 2));
-      const utterances: Utterance[] = (result.utterances || []).map(
-        (u: { speaker: string; text: string }) => ({
-          speaker: u.speaker,
-          text: u.text,
-        })
-      );
+      // Fetch sentence-level data for accurate splitting
+      const sentencesRes = await fetch(`${BASE_URL}/transcript/${id}/sentences`, {
+        headers: { authorization: API_KEY },
+      });
+
+      const MAX_SENTENCES = 5;
+      let utterances: Utterance[];
+
+      if (sentencesRes.ok) {
+        const { sentences } = await sentencesRes.json() as {
+          sentences: { speaker: string; text: string }[];
+        };
+
+        // Group consecutive sentences by speaker, max 5 per chunk
+        utterances = [];
+        let currentSpeaker = "";
+        let currentTexts: string[] = [];
+
+        for (const s of sentences) {
+          if (s.speaker !== currentSpeaker || currentTexts.length >= MAX_SENTENCES) {
+            if (currentTexts.length > 0) {
+              utterances.push({ speaker: currentSpeaker, text: currentTexts.join(" ") });
+            }
+            currentSpeaker = s.speaker;
+            currentTexts = [s.text];
+          } else {
+            currentTexts.push(s.text);
+          }
+        }
+        if (currentTexts.length > 0) {
+          utterances.push({ speaker: currentSpeaker, text: currentTexts.join(" ") });
+        }
+      } else {
+        // Fallback to utterances if sentences endpoint fails
+        utterances = (result.utterances || []).map(
+          (u: { speaker: string; text: string }) => ({
+            speaker: u.speaker,
+            text: u.text,
+          })
+        );
+      }
 
       const speakers = Array.from(new Set(utterances.map((u) => u.speaker)));
 
