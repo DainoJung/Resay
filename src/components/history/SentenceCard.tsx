@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLanguage } from "@/lib/i18n/context";
 
 interface SentenceCardProps {
@@ -22,7 +22,30 @@ export default function SentenceCard({
   const [bookmarked, setBookmarked] = useState(initialBookmarked);
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [translation, setTranslation] = useState(korean);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Poll for translation if not yet available
+  useEffect(() => {
+    if (translation || !id) return;
+    let cancelled = false;
+    const poll = async () => {
+      for (let i = 0; i < 15; i++) {
+        if (cancelled) return;
+        await new Promise((r) => setTimeout(r, 2000));
+        try {
+          const res = await fetch(`/api/bookmark/translation?id=${id}`);
+          const data = await res.json();
+          if (data.translation) {
+            setTranslation(data.translation);
+            return;
+          }
+        } catch { /* retry */ }
+      }
+    };
+    poll();
+    return () => { cancelled = true; };
+  }, [id, translation]);
 
   const handleBookmark = () => {
     const newValue = !bookmarked;
@@ -110,7 +133,11 @@ export default function SentenceCard({
           </button>
         </div>
       </div>
-      <p className="text-sm text-gray-500">{korean}</p>
+      {translation ? (
+        <p className="text-sm text-gray-500">{translation}</p>
+      ) : (
+        <div className="h-4 w-2/3 bg-gray-100 rounded animate-pulse" />
+      )}
     </div>
   );
 }
