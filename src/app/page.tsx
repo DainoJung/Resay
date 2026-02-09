@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
-import { Feedback, Utterance } from "@/types";
+import { Utterance } from "@/types";
 import RecordButton from "@/components/RecordButton";
 import RecordingStatus from "@/components/RecordingStatus";
 import SpeakerSelector from "@/components/SpeakerSelector";
-import ChatView from "@/components/ChatView";
 import FeedbackSkeleton from "@/components/FeedbackSkeleton";
 import { useLanguage } from "@/lib/i18n/context";
 
@@ -17,35 +17,46 @@ type Status =
   | "transcribing"
   | "selecting-speaker"
   | "analyzing"
-  | "done"
   | "error";
 
 export default function Home() {
+  const router = useRouter();
   const { isRecording, duration, startRecording, stopRecording, error: recorderError } =
     useAudioRecorder();
   const { t, lang, userName } = useLanguage();
 
   const [status, setStatus] = useState<Status>("idle");
-  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
   const [utterances, setUtterances] = useState<Utterance[]>([]);
   const [speakers, setSpeakers] = useState<string[]>([]);
-  const [mySpeaker, setMySpeaker] = useState("");
   const [transcript, setTranscript] = useState("");
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showStopConfirm, setShowStopConfirm] = useState(false);
 
   const handleStart = async () => {
     setError(null);
-    setFeedbacks([]);
     setUtterances([]);
     setSpeakers([]);
-    setMySpeaker("");
     setTranscript("");
     setStatus("recording");
     await startRecording();
   };
 
   const handleStop = async () => {
+    if (duration < 2) {
+      setShowStopConfirm(true);
+      return;
+    }
+    await processRecording();
+  };
+
+  const handleConfirmStop = async () => {
+    setShowStopConfirm(false);
+    await stopRecording();
+    setStatus("idle");
+  };
+
+  const processRecording = async () => {
     const blob = await stopRecording();
     if (!blob) {
       setStatus("idle");
@@ -55,8 +66,9 @@ export default function Home() {
     try {
       // Step 1: Transcribe with speaker labels
       setStatus("transcribing");
+      const ext = blob.type.includes("mp4") ? "mp4" : blob.type.includes("aac") ? "aac" : "webm";
       const formData = new FormData();
-      formData.append("audio", blob, "recording.webm");
+      formData.append("audio", blob, `recording.${ext}`);
 
       const transcribeRes = await fetch("/api/transcribe", {
         method: "POST",
@@ -76,7 +88,6 @@ export default function Home() {
       // If only one speaker, skip selection
       if (transcribeData.speakers.length <= 1) {
         const speaker = transcribeData.speakers[0] || "A";
-        setMySpeaker(speaker);
         await fetchFeedback(
           transcribeData.transcript,
           transcribeData.utterances,
@@ -93,7 +104,6 @@ export default function Home() {
   };
 
   const handleSpeakerSelect = async (speaker: string) => {
-    setMySpeaker(speaker);
     await fetchFeedback(transcript, utterances, speaker, audioUrl);
   };
 
@@ -114,6 +124,7 @@ export default function Home() {
           mySpeaker: speaker,
           audioUrl: aUrl,
           lang,
+          duration,
         }),
       });
 
@@ -122,8 +133,8 @@ export default function Home() {
         throw new Error(feedbackData.error || t("error.feedbackFailed"));
       }
 
-      setFeedbacks(feedbackData.feedbacks);
-      setStatus("done");
+      router.push(`/history?id=${feedbackData.sessionId}`);
+      setStatus("idle");
     } catch (err) {
       setError(err instanceof Error ? err.message : t("error.generic"));
       setStatus("error");
@@ -159,10 +170,12 @@ export default function Home() {
 
       {/* Center content area */}
       <div className="flex-1 flex flex-col items-center justify-top px-4 pb-40">
-        {/* Partner name */}
-        <h1 className="text-3xl font-bold italic text-gray-900 mt-20">
-          {userName}
-        </h1>
+        {/* Partner name - hide during processing */}
+        {!isProcessing && status !== "selecting-speaker" && (
+          <h1 className="text-3xl font-bold italic text-gray-900 mt-20">
+            {userName}
+          </h1>
+        )}
 
         {/* Recording status (timer) */}
         {status === "recording" && (
@@ -206,24 +219,6 @@ export default function Home() {
           )}
 
           {status === "analyzing" && <FeedbackSkeleton />}
-
-          {status === "done" && (
-            <>
-              <ChatView
-                utterances={utterances}
-                mySpeaker={mySpeaker}
-                feedbacks={feedbacks}
-              />
-              <div className="flex justify-center mt-6">
-                <button
-                  onClick={handleStart}
-                  className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
-                >
-                  {t("action.recordAgain")}
-                </button>
-              </div>
-            </>
-          )}
         </div>
       </div>
 
@@ -236,6 +231,34 @@ export default function Home() {
             onStart={handleStart}
             onStop={handleStop}
           />
+        </div>
+      )}
+
+      {/* Stop confirmation popup */}
+      {showStopConfirm && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-6">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-xs shadow-xl">
+            <p className="text-base font-semibold text-gray-900 text-center mb-2">
+              {t("record.stopConfirmTitle")}
+            </p>
+            <p className="text-sm text-gray-500 text-center mb-6">
+              {t("record.stopConfirmDesc")}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowStopConfirm(false)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+              >
+                {t("record.continueRecording")}
+              </button>
+              <button
+                onClick={handleConfirmStop}
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors"
+              >
+                {t("record.stopRecording")}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
