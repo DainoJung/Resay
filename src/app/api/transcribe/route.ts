@@ -40,9 +40,10 @@ export async function POST(req: NextRequest) {
       audioUrl,
     });
   } catch (error) {
-    console.error("Transcribe error:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("Transcribe error:", message);
     return NextResponse.json(
-      { error: "Transcription failed" },
+      { error: `Transcription failed: ${message}` },
       { status: 500 }
     );
   }
