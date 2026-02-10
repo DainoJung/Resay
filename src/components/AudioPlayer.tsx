@@ -8,6 +8,7 @@ interface AudioPlayerProps {
 }
 
 function formatTime(ms: number): string {
+  if (!isFinite(ms) || isNaN(ms)) return "--:--";
   const totalSec = Math.floor(ms / 1000);
   const min = Math.floor(totalSec / 60);
   const sec = totalSec % 60;
@@ -21,6 +22,9 @@ export default function AudioPlayer({ audioUrl, onTimeUpdate }: AudioPlayerProps
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
+  // If it's a storage path (not a full URL), proxy through our API
+  const src = audioUrl.startsWith("http") ? audioUrl : `/api/audio?path=${encodeURIComponent(audioUrl)}`;
+
   const handleTimeUpdate = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -33,13 +37,18 @@ export default function AudioPlayer({ audioUrl, onTimeUpdate }: AudioPlayerProps
     const audio = audioRef.current;
     if (!audio) return;
 
-    const onLoaded = () => setDuration(audio.duration * 1000);
+    const updateDuration = () => {
+      const d = audio.duration;
+      if (isFinite(d) && d > 0) setDuration(d * 1000);
+    };
     const onEnded = () => setIsPlaying(false);
 
-    audio.addEventListener("loadedmetadata", onLoaded);
+    audio.addEventListener("loadedmetadata", updateDuration);
+    audio.addEventListener("durationchange", updateDuration);
     audio.addEventListener("ended", onEnded);
     return () => {
-      audio.removeEventListener("loadedmetadata", onLoaded);
+      audio.removeEventListener("loadedmetadata", updateDuration);
+      audio.removeEventListener("durationchange", updateDuration);
       audio.removeEventListener("ended", onEnded);
     };
   }, []);
@@ -64,11 +73,11 @@ export default function AudioPlayer({ audioUrl, onTimeUpdate }: AudioPlayerProps
     audio.currentTime = ratio * audio.duration;
   }, []);
 
-  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+  const progress = duration > 0 && isFinite(duration) ? (currentTime / duration) * 100 : 0;
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3 flex items-center gap-3">
-      <audio ref={audioRef} src={audioUrl} preload="metadata" onTimeUpdate={handleTimeUpdate} />
+      <audio ref={audioRef} src={src} preload="metadata" onTimeUpdate={handleTimeUpdate} />
 
       <button
         onClick={togglePlay}
@@ -90,7 +99,7 @@ export default function AudioPlayer({ audioUrl, onTimeUpdate }: AudioPlayerProps
         <div
           ref={progressRef}
           onClick={handleProgressClick}
-          className="h-1.5 bg-gray-100 rounded-full cursor-pointer relative"
+          className="h-2 bg-gray-200 rounded-full cursor-pointer relative"
         >
           <div
             className="absolute left-0 top-0 h-full bg-blue-500 rounded-full transition-[width] duration-100"

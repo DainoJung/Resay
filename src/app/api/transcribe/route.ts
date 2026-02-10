@@ -41,11 +41,26 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Upload audio to Supabase Storage for playback
+    await supabaseAdmin.storage
+      .createBucket("recordings", { public: false })
+      .catch(() => {});
+
+    // Use a temp ID for storage path; will be updated after session creation
+    const tempId = crypto.randomUUID();
+    const storagePath = `${tempId}.${fileExt}`;
+    await supabaseAdmin.storage
+      .from("recordings")
+      .upload(storagePath, new Uint8Array(buffer), {
+        contentType: `audio/${fileExt}`,
+        upsert: true,
+      });
+
     return NextResponse.json({
       transcript: result.transcript,
       utterances: result.utterances,
       speakers: result.speakers,
-      audioUrl,
+      audioUrl: storagePath,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
