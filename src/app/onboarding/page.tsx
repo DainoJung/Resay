@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth/context";
 
-type Step = 0 | 1 | 2 | 3 | 4;
+type Step = 0 | 1 | 2 | 3;
 
 const STORAGE_KEYS = {
   native: "resay-onboarding-native",
@@ -45,11 +45,6 @@ const labels = {
     step4SentDesc: "\uB85C\uADF8\uC778 \uB9C1\uD06C\uB97C \uBCF4\uB0C8\uC2B5\uB2C8\uB2E4. \uBA54\uC77C\uD568\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694.",
     step4Retry: "\uB2E4\uB978 \uC774\uBA54\uC77C\uB85C \uC2DC\uB3C4",
     step4Note: "\uBE44\uBC00\uBC88\uD638 \uC5C6\uC774 \uC774\uBA54\uC77C\uB85C\uB9CC \uB85C\uADF8\uC778\uB429\uB2C8\uB2E4.",
-    step5Title: "Resay\uC5D0 \uC624\uC2E0 \uAC83\uC744 \uD658\uC601\uD569\uB2C8\uB2E4!",
-    step5Desc1: "\uC601\uC5B4 \uD1B5\uD654\uB97C \uB179\uC74C\uD558\uBA74",
-    step5Desc2: "AI\uAC00 \uC790\uC5F0\uC2A4\uB7EC\uC6B4 \uD45C\uD604\uC73C\uB85C \uBC14\uAFD4\uC8FC\uACE0",
-    step5Desc3: "\uB098\uC5D0\uAC8C \uB531 \uB9DE\uB294 \uD45C\uD604\uC744 \uCD94\uCC9C\uD574 \uC90D\uB2C8\uB2E4.",
-    step5Start: "\uC2DC\uC791\uD558\uAE30",
     hasAccount: "\uC774\uBBF8 \uACC4\uC815\uC774 \uC788\uC73C\uC2E0\uAC00\uC694?",
     login: "\uB85C\uADF8\uC778",
   },
@@ -72,11 +67,6 @@ const labels = {
     step4SentDesc: "\u30ED\u30B0\u30A4\u30F3\u30EA\u30F3\u30AF\u3092\u9001\u4FE1\u3057\u307E\u3057\u305F\u3002\u30E1\u30FC\u30EB\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
     step4Retry: "\u5225\u306E\u30E1\u30FC\u30EB\u3067\u8A66\u3059",
     step4Note: "\u30D1\u30B9\u30EF\u30FC\u30C9\u4E0D\u8981\u3067\u30E1\u30FC\u30EB\u3060\u3051\u3067\u30ED\u30B0\u30A4\u30F3\u3067\u304D\u307E\u3059\u3002",
-    step5Title: "Resay\u3078\u3088\u3046\u3053\u305D\uFF01",
-    step5Desc1: "\u82F1\u8A9E\u306E\u4F1A\u8A71\u3092\u9332\u97F3\u3059\u308B\u3068",
-    step5Desc2: "AI\u304C\u81EA\u7136\u306A\u8868\u73FE\u306B\u76F4\u3057\u3066\u304F\u308C\u3066",
-    step5Desc3: "\u3042\u306A\u305F\u306B\u3074\u3063\u305F\u308A\u306E\u8868\u73FE\u3092\u304A\u3059\u3059\u3081\u3057\u307E\u3059\u3002",
-    step5Start: "\u59CB\u3081\u308B",
     hasAccount: "\u3059\u3067\u306B\u30A2\u30AB\u30A6\u30F3\u30C8\u3092\u304A\u6301\u3061\u3067\u3059\u304B\uFF1F",
     login: "\u30ED\u30B0\u30A4\u30F3",
   },
@@ -104,7 +94,6 @@ export default function OnboardingPage() {
   const [nativeLang, setNativeLang] = useState<string>("");
   const [learningLang, setLearningLang] = useState<string>("");
   const [displayName, setDisplayName] = useState("");
-  const [saving, setSaving] = useState(false);
 
   // Email step state
   const [email, setEmail] = useState("");
@@ -128,50 +117,36 @@ export default function OnboardingPage() {
     }
   }, []);
 
-  // On mount: check auth state and sync if needed
+  // On mount: check auth state and auto-complete onboarding if logged in
   useEffect(() => {
-    if (!user || syncing) return;
+    if (!user || !profile || syncing) return;
 
     // Already completed onboarding → go home
-    if (profile?.onboarding_completed) {
+    if (profile.onboarding_completed) {
       router.replace("/");
       return;
     }
 
-    // User logged in + localStorage has onboarding data → sync to profile
+    // User logged in + onboarding not completed → sync data and complete
+    setSyncing(true);
     const data = getOnboardingData();
-    if (data.native && data.learning && data.name) {
-      setSyncing(true);
-      (async () => {
-        await supabase
-          .from("profiles")
-          .update({
-            native_language: data.native,
-            learning_language: data.learning,
-            display_name: data.name,
-            onboarding_completed: false,
-          })
-          .eq("id", user.id);
 
-        // Restore state from localStorage
-        setNativeLang(data.native!);
-        setLearningLang(data.learning!);
-        setDisplayName(data.name!);
+    (async () => {
+      await supabase
+        .from("profiles")
+        .update({
+          native_language: data.native || profile.native_language || "ko",
+          learning_language: data.learning || profile.learning_language || "en",
+          display_name: data.name || profile.display_name || null,
+          onboarding_completed: true,
+        })
+        .eq("id", user.id);
 
-        setSyncing(false);
-        setDirection("forward");
-        setStep(4);
-      })();
-    } else if (profile && step === 0) {
-      // User is logged in but no localStorage (e.g., magic link opened in different browser)
-      // Email verified → skip to welcome screen
-      setNativeLang(profile.native_language || "ko");
-      setLearningLang(profile.learning_language || "en");
-      if (profile.display_name) setDisplayName(profile.display_name);
-      setDirection("forward");
-      setStep(4);
-    }
-  }, [user, profile, router, syncing, step]);
+      clearOnboardingStorage();
+      await refreshProfile();
+      router.replace("/");
+    })();
+  }, [user, profile, router, syncing, refreshProfile]);
 
   const goTo = useCallback((nextStep: Step) => {
     setDirection(nextStep > step ? "forward" : "backward");
@@ -221,27 +196,6 @@ export default function OnboardingPage() {
     setEmailSent(true);
   };
 
-  const handleComplete = async () => {
-    if (saving || !user) return;
-    setSaving(true);
-
-    const data = getOnboardingData();
-
-    await supabase
-      .from("profiles")
-      .update({
-        native_language: data.native || nativeLang || "ko",
-        learning_language: data.learning || learningLang || "en",
-        display_name: data.name || displayName.trim() || null,
-        onboarding_completed: true,
-      })
-      .eq("id", user.id);
-
-    clearOnboardingStorage();
-    await refreshProfile();
-    router.replace("/");
-  };
-
   const slideClass = (targetStep: Step) => {
     if (step === targetStep) return "onboarding-step-active";
     if (direction === "forward") {
@@ -256,12 +210,12 @@ export default function OnboardingPage() {
       <div className="fixed top-0 left-0 right-0 z-10 h-1 bg-gray-100">
         <div
           className="h-full bg-blue-500 transition-all duration-500 ease-out"
-          style={{ width: `${((step + 1) / 5) * 100}%` }}
+          style={{ width: `${((step + 1) / 4) * 100}%` }}
         />
       </div>
 
       {/* Back button */}
-      {step > 0 && step < 4 && !emailSent && (
+      {step > 0 && !emailSent && (
         <button
           onClick={() => goTo((step - 1) as Step)}
           className="fixed top-4 left-4 z-20 p-2 text-gray-400 hover:text-gray-600 transition-colors"
@@ -430,38 +384,6 @@ export default function OnboardingPage() {
           )}
         </div>
 
-        {/* Step 4: Welcome / App Introduction */}
-        <div className={`absolute inset-0 flex flex-col items-center justify-center px-8 ${slideClass(4)}`}>
-          <div className="w-20 h-20 mx-auto mb-8 rounded-full bg-blue-50 flex items-center justify-center">
-            <svg className="w-10 h-10 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 116 0v8.25a3 3 0 01-3 3z" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">{t.step5Title}</h1>
-          <div className="text-center text-gray-500 text-sm space-y-1 mb-10">
-            <p>{t.step5Desc1}</p>
-            <p>{t.step5Desc2}</p>
-            <p>{t.step5Desc3}</p>
-          </div>
-          <div className="w-full max-w-xs">
-            <button
-              onClick={handleComplete}
-              disabled={saving}
-              className="w-full rounded-2xl bg-blue-500 py-4 text-white font-semibold text-base transition-all hover:bg-blue-600 disabled:opacity-50"
-            >
-              {saving ? (
-                <span className="inline-flex items-center gap-2">
-                  <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                </span>
-              ) : (
-                t.step5Start
-              )}
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );
