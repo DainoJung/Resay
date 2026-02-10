@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { uploadAudio, transcribeAudio } from "@/lib/assemblyai";
 import { supabaseAdmin } from "@/lib/supabase-server";
+import { getUserFromRequest } from "@/lib/auth/get-user";
 
 export const maxDuration = 120;
 
@@ -8,6 +9,12 @@ export async function POST(req: NextRequest) {
   let buffer: Buffer | null = null;
   let fileExt = "webm";
   let audioDuration: number | null = null;
+
+  // Auth check (only reads cookies, doesn't consume body)
+  const userId = await getUserFromRequest(req);
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   try {
     const formData = await req.formData();
@@ -71,7 +78,7 @@ export async function POST(req: NextRequest) {
     let sessionId: string | undefined;
     if (buffer && buffer.length > 0) {
       try {
-        sessionId = await saveFailedSession(buffer, fileExt, audioDuration);
+        sessionId = await saveFailedSession(buffer, fileExt, audioDuration, userId);
       } catch (saveErr) {
         console.error("Failed to save failed session:", saveErr);
       }
@@ -87,7 +94,8 @@ export async function POST(req: NextRequest) {
 async function saveFailedSession(
   buffer: Buffer,
   ext: string,
-  duration: number | null
+  duration: number | null,
+  userId: string
 ): Promise<string> {
   const { data: session, error: sessionError } = await supabaseAdmin
     .from("sessions")
@@ -96,6 +104,7 @@ async function saveFailedSession(
       status: "transcription_failed",
       feedback_count: 0,
       duration: duration || null,
+      user_id: userId,
     })
     .select("id")
     .single();

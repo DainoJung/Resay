@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { generateTranslation } from "@/lib/gemini";
+import { getUserFromRequest } from "@/lib/auth/get-user";
 
 async function generateTranslationInBackground(id: string, lang: string) {
   try {
@@ -24,6 +25,11 @@ async function generateTranslationInBackground(id: string, lang: string) {
 
 export async function POST(req: NextRequest) {
   try {
+    const userId = await getUserFromRequest(req);
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { table, id, saved, lang } = (await req.json()) as {
       table: "expressions" | "feedbacks";
       id: string;
@@ -37,6 +43,17 @@ export async function POST(req: NextRequest) {
 
     if (table !== "expressions" && table !== "feedbacks") {
       return NextResponse.json({ error: "Invalid table" }, { status: 400 });
+    }
+
+    // Verify ownership
+    const { data: record } = await supabaseAdmin
+      .from(table)
+      .select("user_id")
+      .eq("id", id)
+      .single();
+
+    if (!record || record.user_id !== userId) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
     // Save immediately

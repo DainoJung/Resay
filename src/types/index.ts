@@ -41,6 +41,7 @@ export interface Session {
   title?: string | null;
   expressions?: Expression[];
   status?: string;
+  user_id?: string;
 }
 
 export interface GeminiFeedbackItem {

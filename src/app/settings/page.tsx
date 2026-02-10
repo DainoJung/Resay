@@ -2,7 +2,9 @@
 
 import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useLanguage, TTSVoice, TTSStyle } from "@/lib/i18n/context";
+import { useAuth } from "@/lib/auth/context";
 import { Language } from "@/lib/i18n/translations";
 
 const languages: { code: Language; flag: string; label: string }[] = [
@@ -36,7 +38,10 @@ const styles: { id: TTSStyle; labelKey: "settings.ttsStyle.normal" | "settings.t
 
 export default function SettingsPage() {
   const { lang, setLang, t, userName, setUserName, ttsVoice, setTtsVoice, ttsStyle, setTtsStyle } = useLanguage();
+  const { user, signOut } = useAuth();
+  const router = useRouter();
   const [previewingVoice, setPreviewingVoice] = useState<string | null>(null);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
 
@@ -90,6 +95,11 @@ export default function SettingsPage() {
     }
   };
 
+  const handleLogout = async () => {
+    await signOut();
+    router.replace("/login");
+  };
+
   return (
     <div className="min-h-screen max-w-md mx-auto">
       {/* Header */}
@@ -108,6 +118,25 @@ export default function SettingsPage() {
       </div>
 
       <div className="px-4 pt-6 pb-24">
+      {/* Account section */}
+      <div className="space-y-2 mb-8">
+        <h2 className="text-sm font-medium text-gray-500 px-1">{t("settings.account")}</h2>
+        <p className="text-xs text-gray-500 px-1 mb-3">{t("settings.accountDescription")}</p>
+        <div className="rounded-2xl border border-gray-200 bg-white p-4">
+          <div className="flex items-center justify-between">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-gray-900 truncate">{user?.email}</p>
+            </div>
+            <button
+              onClick={() => setShowLogoutConfirm(true)}
+              className="ml-3 text-sm text-red-500 font-medium hover:text-red-600 transition-colors flex-shrink-0"
+            >
+              {t("settings.logout")}
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Name setting */}
       <div className="space-y-2 mb-8">
         <h2 className="text-sm font-medium text-gray-500 px-1">{t("settings.name")}</h2>
@@ -264,6 +293,34 @@ export default function SettingsPage() {
         </div>
       </div>
       </div>
+
+      {/* Logout confirmation modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
+          <div className="w-full max-w-xs bg-white rounded-2xl p-6 space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900 text-center">
+              {t("settings.logoutConfirm")}
+            </h3>
+            <p className="text-sm text-gray-500 text-center">
+              {t("settings.logoutConfirmDesc")}
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                className="flex-1 rounded-xl border border-gray-200 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                {t("settings.cancel")}
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex-1 rounded-xl bg-red-500 py-3 text-sm font-medium text-white hover:bg-red-600 transition-colors"
+              >
+                {t("settings.logout")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

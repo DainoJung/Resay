@@ -73,6 +73,14 @@ export const translations = {
     "settings.ttsStyle.fast": "빠르게",
     "settings.ttsStyle.calm": "차분하게",
     "settings.ttsStyle.energetic": "활기차게",
+
+    // Settings - Account
+    "settings.account": "계정",
+    "settings.accountDescription": "로그인 정보 및 계정 관리",
+    "settings.logout": "로그아웃",
+    "settings.logoutConfirm": "로그아웃 하시겠습니까?",
+    "settings.logoutConfirmDesc": "다시 로그인하려면 이메일 인증이 필요합니다.",
+    "settings.cancel": "취소",
   },
   ja: {
     // Nav
@@ -146,6 +154,14 @@ export const translations = {
     "settings.ttsStyle.fast": "速く",
     "settings.ttsStyle.calm": "穏やかに",
     "settings.ttsStyle.energetic": "元気に",
+
+    // Settings - Account
+    "settings.account": "アカウント",
+    "settings.accountDescription": "ログイン情報とアカウント管理",
+    "settings.logout": "ログアウト",
+    "settings.logoutConfirm": "ログアウトしますか？",
+    "settings.logoutConfirmDesc": "再度ログインするにはメール認証が必要です。",
+    "settings.cancel": "キャンセル",
   },
 } as const;
 

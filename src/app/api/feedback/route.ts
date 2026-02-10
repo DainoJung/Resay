@@ -2,11 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { generateFeedback, generateExpressions, generateTitle } from "@/lib/gemini";
 import { Utterance } from "@/types";
+import { getUserFromRequest } from "@/lib/auth/get-user";
 
 export const maxDuration = 120;
 
 export async function POST(req: NextRequest) {
   try {
+    const userId = await getUserFromRequest(req);
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { transcript, utterances, mySpeaker, audioUrl, lang, duration } = (await req.json()) as {
       transcript: string;
       utterances: Utterance[];
@@ -43,6 +49,7 @@ export async function POST(req: NextRequest) {
         my_speaker: mySpeaker,
         title: title || null,
         duration: duration || null,
+        user_id: userId,
       })
       .select("id")
       .single();
@@ -63,6 +70,7 @@ export async function POST(req: NextRequest) {
         paraphrase: item.paraphrase,
         explanation: item.explanation,
         is_perfect: item.is_perfect ?? false,
+        user_id: userId,
       }));
 
       const { error: feedbackError } = await supabaseAdmin
@@ -82,6 +90,7 @@ export async function POST(req: NextRequest) {
         meaning: item.meaning,
         example: item.example,
         highlight_word: item.highlight_word,
+        user_id: userId,
       }));
 
       const { error: expressionError } = await supabaseAdmin

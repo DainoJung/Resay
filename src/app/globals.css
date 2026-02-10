@@ -14,3 +14,37 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
+
+/* Onboarding step transitions */
+.onboarding-step-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 500ms ease, transform 500ms ease;
+  pointer-events: auto;
+}
+
+.onboarding-step-exit-left {
+  opacity: 0;
+  transform: translateX(-30%);
+  transition: opacity 500ms ease, transform 500ms ease;
+  pointer-events: none;
+}
+
+.onboarding-step-exit-right {
+  opacity: 0;
+  transform: translateX(30%);
+  transition: opacity 500ms ease, transform 500ms ease;
+  pointer-events: none;
+}
+
+.onboarding-step-enter-right {
+  opacity: 0;
+  transform: translateX(30%);
+  pointer-events: none;
+}
+
+.onboarding-step-enter-left {
+  opacity: 0;
+  transform: translateX(-30%);
+  pointer-events: none;
+}

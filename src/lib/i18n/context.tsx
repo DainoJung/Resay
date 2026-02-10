@@ -2,6 +2,8 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import { translations, Language, TranslationKey } from "./translations";
+import { useAuth } from "@/lib/auth/context";
+import { supabase } from "@/lib/supabase";
 
 export type TTSVoice = "Zephyr" | "Puck" | "Charon" | "Fenrir" | "Leda" | "Orus" | "Aoede";
 export type TTSStyle = "normal" | "slow" | "fast" | "calm" | "energetic";
@@ -27,47 +29,95 @@ const TTS_STYLE_KEY = "resay-tts-style";
 const DEFAULT_NAME = "Tomo";
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
+  const { user, profile } = useAuth();
   const [lang, setLangState] = useState<Language>("ko");
   const [userName, setUserNameState] = useState(DEFAULT_NAME);
   const [ttsVoice, setTtsVoiceState] = useState<TTSVoice>("Puck");
   const [ttsStyle, setTtsStyleState] = useState<TTSStyle>("normal");
+  const [profileLoaded, setProfileLoaded] = useState(false);
 
+  // Load from profile first, then fallback to localStorage
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === "ko" || saved === "ja") {
-      setLangState(saved);
-      document.documentElement.lang = saved;
+    if (profile && !profileLoaded) {
+      const profileLang = profile.native_language as Language;
+      if (profileLang === "ko" || profileLang === "ja") {
+        setLangState(profileLang);
+        document.documentElement.lang = profileLang;
+      }
+      if (profile.display_name) {
+        setUserNameState(profile.display_name);
+      }
+      if (profile.tts_voice) {
+        setTtsVoiceState(profile.tts_voice as TTSVoice);
+      }
+      if (profile.tts_style) {
+        setTtsStyleState(profile.tts_style as TTSStyle);
+      }
+      setProfileLoaded(true);
+      return;
     }
-    const savedName = localStorage.getItem(NAME_STORAGE_KEY);
-    if (savedName) {
-      setUserNameState(savedName);
+
+    if (!profile && !profileLoaded) {
+      // Fallback to localStorage when no profile (e.g., login page)
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved === "ko" || saved === "ja") {
+        setLangState(saved);
+        document.documentElement.lang = saved;
+      }
+      const savedName = localStorage.getItem(NAME_STORAGE_KEY);
+      if (savedName) setUserNameState(savedName);
+      const savedVoice = localStorage.getItem(TTS_VOICE_KEY);
+      if (savedVoice) setTtsVoiceState(savedVoice as TTSVoice);
+      const savedStyle = localStorage.getItem(TTS_STYLE_KEY);
+      if (savedStyle) setTtsStyleState(savedStyle as TTSStyle);
     }
-    const savedVoice = localStorage.getItem(TTS_VOICE_KEY);
-    if (savedVoice) setTtsVoiceState(savedVoice as TTSVoice);
-    const savedStyle = localStorage.getItem(TTS_STYLE_KEY);
-    if (savedStyle) setTtsStyleState(savedStyle as TTSStyle);
-  }, []);
+  }, [profile, profileLoaded]);
 
-  const setLang = useCallback((newLang: Language) => {
-    setLangState(newLang);
-    localStorage.setItem(STORAGE_KEY, newLang);
-    document.documentElement.lang = newLang;
-  }, []);
+  const syncProfile = useCallback(
+    (updates: Record<string, string>) => {
+      if (user) {
+        supabase.from("profiles").update(updates).eq("id", user.id).then(() => {});
+      }
+    },
+    [user]
+  );
 
-  const setUserName = useCallback((name: string) => {
-    setUserNameState(name);
-    localStorage.setItem(NAME_STORAGE_KEY, name);
-  }, []);
+  const setLang = useCallback(
+    (newLang: Language) => {
+      setLangState(newLang);
+      localStorage.setItem(STORAGE_KEY, newLang);
+      document.documentElement.lang = newLang;
+      syncProfile({ native_language: newLang });
+    },
+    [syncProfile]
+  );
 
-  const setTtsVoice = useCallback((voice: TTSVoice) => {
-    setTtsVoiceState(voice);
-    localStorage.setItem(TTS_VOICE_KEY, voice);
-  }, []);
+  const setUserName = useCallback(
+    (name: string) => {
+      setUserNameState(name);
+      localStorage.setItem(NAME_STORAGE_KEY, name);
+      syncProfile({ display_name: name });
+    },
+    [syncProfile]
+  );
 
-  const setTtsStyle = useCallback((style: TTSStyle) => {
-    setTtsStyleState(style);
-    localStorage.setItem(TTS_STYLE_KEY, style);
-  }, []);
+  const setTtsVoice = useCallback(
+    (voice: TTSVoice) => {
+      setTtsVoiceState(voice);
+      localStorage.setItem(TTS_VOICE_KEY, voice);
+      syncProfile({ tts_voice: voice });
+    },
+    [syncProfile]
+  );
+
+  const setTtsStyle = useCallback(
+    (style: TTSStyle) => {
+      setTtsStyleState(style);
+      localStorage.setItem(TTS_STYLE_KEY, style);
+      syncProfile({ tts_style: style });
+    },
+    [syncProfile]
+  );
 
   const t = useCallback(
     (key: TranslationKey): string => {

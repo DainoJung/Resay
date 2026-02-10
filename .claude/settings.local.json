@@ -27,7 +27,8 @@
       "mcp__claude_ai_Context_7__resolve-library-id",
       "mcp__claude_ai_Context_7__query-docs",
       "WebFetch(domain:ai.google.dev)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(sips:*)"
     ]
   }
 }

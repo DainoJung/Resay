@@ -2,11 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { uploadAudio, transcribeAudio } from "@/lib/assemblyai";
 import { generateFeedback, generateExpressions, generateTitle } from "@/lib/gemini";
+import { getUserFromRequest } from "@/lib/auth/get-user";
 
 export const maxDuration = 120;
 
 export async function POST(req: NextRequest) {
   try {
+    const userId = await getUserFromRequest(req);
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { sessionId, lang, mySpeaker } = (await req.json()) as {
       sessionId: string;
       lang?: string;
@@ -27,6 +33,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
+    // Verify ownership
+    if (session.user_id !== userId) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
     // Case 2: Speaker selected after transcription succeeded
     if (mySpeaker && session.transcript) {
       const utterances = typeof session.utterances === "string"
@@ -40,7 +51,8 @@ export async function POST(req: NextRequest) {
         mySpeaker,
         session.audio_url,
         session.duration,
-        lang || "ko"
+        lang || "ko",
+        userId
       );
     }
 
@@ -106,7 +118,8 @@ export async function POST(req: NextRequest) {
       speaker,
       audioUrl,
       session.duration,
-      lang || "ko"
+      lang || "ko",
+      userId
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
@@ -125,7 +138,8 @@ async function generateAndSaveFeedback(
   mySpeaker: string,
   audioUrl: string | null,
   duration: number | null,
-  lang: string
+  lang: string,
+  userId: string
 ) {
   const myTexts = utterances
     .filter((u) => u.speaker === mySpeaker)
@@ -161,6 +175,7 @@ async function generateAndSaveFeedback(
         paraphrase: item.paraphrase,
         explanation: item.explanation,
         is_perfect: item.is_perfect ?? false,
+        user_id: userId,
       }))
     );
   }
@@ -174,6 +189,7 @@ async function generateAndSaveFeedback(
         meaning: item.meaning,
         example: item.example,
         highlight_word: item.highlight_word,
+        user_id: userId,
       }))
     );
   }
