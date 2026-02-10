@@ -33,8 +33,8 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Auth error - redirect to login
-  redirectUrl.pathname = "/login";
+  // Auth error - redirect to onboarding
+  redirectUrl.pathname = "/onboarding";
   redirectUrl.search = "";
   return NextResponse.redirect(redirectUrl);
 }
