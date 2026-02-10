@@ -86,7 +86,7 @@ export default function SettingsPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </Link>
-          <h1 className="text-[17px] font-semibold text-gray-900">{t("settings.title")}</h1>
+          <h1 className="text-base font-semibold text-gray-900">{t("settings.title")}</h1>
         </div>
       </div>
 
@@ -94,7 +94,7 @@ export default function SettingsPage() {
       {/* Name setting */}
       <div className="space-y-2 mb-8">
         <h2 className="text-sm font-medium text-gray-500 px-1">{t("settings.name")}</h2>
-        <p className="text-xs text-gray-400 px-1 mb-3">{t("settings.nameDescription")}</p>
+        <p className="text-xs text-gray-500 px-1 mb-3">{t("settings.nameDescription")}</p>
         <input
           type="text"
           value={userName}
@@ -107,7 +107,7 @@ export default function SettingsPage() {
       {/* Target language setting */}
       <div className="space-y-2 mb-8">
         <h2 className="text-sm font-medium text-gray-500 px-1">{t("settings.targetLanguage")}</h2>
-        <p className="text-xs text-gray-400 px-1 mb-3">{t("settings.targetLanguageDescription")}</p>
+        <p className="text-xs text-gray-500 px-1 mb-3">{t("settings.targetLanguageDescription")}</p>
 
         <div className="grid grid-cols-2 gap-2">
           {targetLanguages.map(({ code, flag, label, available }) => {
@@ -130,7 +130,7 @@ export default function SettingsPage() {
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   ) : !available ? (
-                    <span className="text-[10px] text-gray-400 bg-gray-200 px-1.5 py-0.5 rounded-full flex-shrink-0">
+                    <span className="text-xs text-gray-400 bg-gray-200 px-1.5 py-0.5 rounded-full flex-shrink-0">
                       {t("settings.comingSoon")}
                     </span>
                   ) : null}
@@ -144,7 +144,7 @@ export default function SettingsPage() {
       {/* Language setting */}
       <div className="space-y-2 mb-8">
         <h2 className="text-sm font-medium text-gray-500 px-1">{t("settings.language")}</h2>
-        <p className="text-xs text-gray-400 px-1 mb-3">{t("settings.languageDescription")}</p>
+        <p className="text-xs text-gray-500 px-1 mb-3">{t("settings.languageDescription")}</p>
 
         <div className="grid grid-cols-2 gap-2">
           {languages.map(({ code, flag, label }) => {
@@ -178,7 +178,7 @@ export default function SettingsPage() {
       {/* TTS Voice setting */}
       <div className="space-y-2 mb-8">
         <h2 className="text-sm font-medium text-gray-500 px-1">{t("settings.ttsVoice")}</h2>
-        <p className="text-xs text-gray-400 px-1 mb-3">{t("settings.ttsVoiceDescription")}</p>
+        <p className="text-xs text-gray-500 px-1 mb-3">{t("settings.ttsVoiceDescription")}</p>
 
         <div className="grid grid-cols-2 gap-2">
           {voices.map(({ id, label }) => {
@@ -226,7 +226,7 @@ export default function SettingsPage() {
       {/* TTS Style setting */}
       <div className="space-y-2">
         <h2 className="text-sm font-medium text-gray-500 px-1">{t("settings.ttsStyle")}</h2>
-        <p className="text-xs text-gray-400 px-1 mb-3">{t("settings.ttsStyleDescription")}</p>
+        <p className="text-xs text-gray-500 px-1 mb-3">{t("settings.ttsStyleDescription")}</p>
 
         <div className="flex flex-wrap gap-2">
           {styles.map(({ id, labelKey }) => {

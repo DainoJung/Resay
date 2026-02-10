@@ -27,7 +27,7 @@ export default function ChatBubble({ text, isMe, feedback, onSaveSentence, isSav
         }`}>
         <div className="flex justify-start">
           <div className="max-w-[85%] bg-white rounded-2xl rounded-tl-md px-4 py-3 shadow-sm border border-gray-100">
-            <p className="text-[15px] text-gray-800 leading-relaxed">{text}</p>
+            <p className="text-sm text-gray-800 leading-relaxed">{text}</p>
           </div>
         </div>
       </div>
@@ -39,7 +39,7 @@ export default function ChatBubble({ text, isMe, feedback, onSaveSentence, isSav
       }`}>
       <div className="flex flex-col items-end gap-1.5">
         <div className="max-w-[85%] bg-blue-500 rounded-2xl rounded-tr-md px-4 py-3">
-          <p className="text-[15px] text-white leading-relaxed">{text}</p>
+          <p className="text-sm text-white leading-relaxed">{text}</p>
         </div>
 
         {feedback && (
@@ -68,11 +68,11 @@ export default function ChatBubble({ text, isMe, feedback, onSaveSentence, isSav
               }`}>
               <div className="flex items-start gap-2">
                 <div className="flex-1 space-y-2">
-                  <p className={`text-[15px] font-medium leading-relaxed ${feedback.is_perfect ? "text-gray-800" : "text-white"
+                  <p className={`text-base font-medium leading-relaxed ${feedback.is_perfect ? "text-gray-800" : "text-white"
                     }`}>
                     {feedback.paraphrase}
                   </p>
-                  <p className={`text-[13px] leading-relaxed ${feedback.is_perfect ? "text-gray-500" : "text-gray-400"
+                  <p className={`text-sm leading-relaxed ${feedback.is_perfect ? "text-gray-500" : "text-gray-400"
                     }`}>
                     {feedback.explanation}
                   </p>

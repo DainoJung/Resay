@@ -10,6 +10,7 @@ import RecordingStatus from "@/components/RecordingStatus";
 import SpeakerSelector from "@/components/SpeakerSelector";
 import ProcessingScreen from "@/components/ProcessingScreen";
 import { useLanguage } from "@/lib/i18n/context";
+import { GiStack } from "react-icons/gi";
 
 type Status =
   | "idle"
@@ -236,15 +237,12 @@ export default function Home() {
       {/* History nav */}
       {!isProcessing && status !== "selecting-speaker" && (
         <nav className="fixed bottom-0 left-0 right-0 safe-area-bottom z-0">
-          <div className="flex items-end justify-end max-w-md mx-auto px-20 py-4">
+          <div className="flex items-end justify-end max-w-md mx-auto px-16 py-4">
             <Link
               href="/history"
               className="flex flex-col items-center py-2 px-4 text-gray-400"
             >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18h18" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M7 16l4-4 4 4 4-8" />
-              </svg>
+              <GiStack className="w-7 h-7" />
               <span className="text-xs mt-0.5">{t("nav.history")}</span>
             </Link>
           </div>

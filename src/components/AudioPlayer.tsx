@@ -106,7 +106,7 @@ export default function AudioPlayer({ audioUrl, onTimeUpdate }: AudioPlayerProps
             style={{ width: `${progress}%` }}
           />
         </div>
-        <div className="flex justify-between text-[11px] text-gray-400">
+        <div className="flex justify-between text-xs text-gray-400">
           <span>{formatTime(currentTime)}</span>
           <span>{duration > 0 ? formatTime(duration) : "--:--"}</span>
         </div>

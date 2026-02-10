@@ -14,7 +14,7 @@ export default function EmptyState({ title, description }: EmptyStateProps) {
         </svg>
       </div>
       <h3 className="text-gray-700 font-medium mb-1">{title}</h3>
-      <p className="text-sm text-gray-400">{description}</p>
+      <p className="text-sm text-gray-500">{description}</p>
     </div>
   );
 }

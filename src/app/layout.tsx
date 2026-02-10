@@ -10,8 +10,8 @@ const geistSans = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Resay - 영어를 더 자연스럽게",
-  description: "영어 대화를 녹음하고 AI 피드백을 받아보세요.",
+  title: "Resay",
+  description: "Record your English conversations and get AI feedback.",
 };
 
 export const viewport: Viewport = {
