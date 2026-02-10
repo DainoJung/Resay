@@ -74,17 +74,23 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="px-4 pt-6 pb-24 min-h-screen max-w-md mx-auto">
-      <Link
-        href="/"
-        className="flex items-center gap-1 text-sm text-gray-500 mb-4"
-      >
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-        </svg>
-      </Link>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">{t("settings.title")}</h1>
+    <div className="min-h-screen max-w-md mx-auto">
+      {/* Header */}
+      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <div className="relative flex items-center justify-center h-12">
+          <Link
+            href="/"
+            className="absolute left-3 flex items-center text-gray-500"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </Link>
+          <h1 className="text-[17px] font-semibold text-gray-900">{t("settings.title")}</h1>
+        </div>
+      </div>
 
+      <div className="px-4 pt-6 pb-24">
       {/* Name setting */}
       <div className="space-y-2 mb-8">
         <h2 className="text-sm font-medium text-gray-500 px-1">{t("settings.name")}</h2>
@@ -239,6 +245,7 @@ export default function SettingsPage() {
             );
           })}
         </div>
+      </div>
       </div>
     </div>
   );

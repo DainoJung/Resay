@@ -236,7 +236,7 @@ export default function Home() {
       {/* History nav */}
       {!isProcessing && status !== "selecting-speaker" && (
         <nav className="fixed bottom-0 left-0 right-0 safe-area-bottom z-0">
-          <div className="flex items-end justify-end max-w-md mx-auto px-6 py-2">
+          <div className="flex items-end justify-end max-w-md mx-auto px-20 py-4">
             <Link
               href="/history"
               className="flex flex-col items-center py-2 px-4 text-gray-400"

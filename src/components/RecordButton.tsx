@@ -18,12 +18,11 @@ export default function RecordButton({
       onClick={isRecording ? onStop : onStart}
       disabled={isProcessing}
       className={`
-        relative w-24 h-24 rounded-full transition-all duration-300
+        relative w-20 h-20 rounded-full transition-all duration-300
         flex items-center justify-center
-        ${
-          isProcessing
-            ? "bg-gray-300 cursor-not-allowed"
-            : isRecording
+        ${isProcessing
+          ? "bg-gray-300 cursor-not-allowed"
+          : isRecording
             ? "bg-red-500 shadow-lg shadow-red-500/30 ring-[6px] ring-red-500/20"
             : "bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/30 ring-[6px] ring-emerald-800/20"
         }
