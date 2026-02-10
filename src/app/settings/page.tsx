@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useLanguage, TTSVoice, TTSStyle } from "@/lib/i18n/context";
 import { Language } from "@/lib/i18n/translations";
@@ -37,18 +37,33 @@ const styles: { id: TTSStyle; labelKey: "settings.ttsStyle.normal" | "settings.t
 export default function SettingsPage() {
   const { lang, setLang, t, userName, setUserName, ttsVoice, setTtsVoice, ttsStyle, setTtsStyle } = useLanguage();
   const [previewingVoice, setPreviewingVoice] = useState<string | null>(null);
-  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
+
+  const getAudioContext = useCallback(() => {
+    if (!audioCtxRef.current) {
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      audioCtxRef.current = new AudioCtx();
+    }
+    if (audioCtxRef.current.state === "suspended") {
+      audioCtxRef.current.resume();
+    }
+    return audioCtxRef.current;
+  }, []);
 
   const handlePreviewVoice = async (voiceId: TTSVoice) => {
     // Stop current preview
-    if (previewAudioRef.current) {
-      previewAudioRef.current.pause();
-      previewAudioRef.current = null;
+    if (sourceNodeRef.current) {
+      sourceNodeRef.current.stop();
+      sourceNodeRef.current = null;
     }
     if (previewingVoice === voiceId) {
       setPreviewingVoice(null);
       return;
     }
+
+    // Create/resume AudioContext on user gesture (before async)
+    const ctx = getAudioContext();
 
     setPreviewingVoice(voiceId);
     try {
@@ -58,16 +73,18 @@ export default function SettingsPage() {
         body: JSON.stringify({ text: "Hi there! How are you doing today?", voice: voiceId }),
       });
       if (!res.ok) throw new Error("TTS failed");
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      previewAudioRef.current = audio;
-      audio.onended = () => {
+      const arrayBuffer = await res.arrayBuffer();
+      const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+
+      const source = ctx.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(ctx.destination);
+      source.onended = () => {
         setPreviewingVoice(null);
-        previewAudioRef.current = null;
-        URL.revokeObjectURL(url);
+        sourceNodeRef.current = null;
       };
-      await audio.play();
+      source.start();
+      sourceNodeRef.current = source;
     } catch {
       setPreviewingVoice(null);
     }

@@ -17,6 +17,7 @@ function formatTime(ms: number): string {
 
 export default function AudioPlayer({ audioUrl, onTimeUpdate }: AudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
   const progressRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -32,6 +33,29 @@ export default function AudioPlayer({ audioUrl, onTimeUpdate }: AudioPlayerProps
     setCurrentTime(timeMs);
     onTimeUpdate(timeMs);
   }, [onTimeUpdate]);
+
+  // Connect audio element to Web Audio API for iOS PWA support
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx || audioCtxRef.current) return;
+
+    try {
+      const ctx = new AudioCtx();
+      const source = ctx.createMediaElementSource(audio);
+      source.connect(ctx.destination);
+      audioCtxRef.current = ctx;
+    } catch {
+      // Already connected or unsupported
+    }
+
+    return () => {
+      audioCtxRef.current?.close().catch(() => {});
+      audioCtxRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -56,10 +80,16 @@ export default function AudioPlayer({ audioUrl, onTimeUpdate }: AudioPlayerProps
   const togglePlay = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
+
+    // Resume AudioContext on user gesture (required for iOS PWA)
+    if (audioCtxRef.current?.state === "suspended") {
+      audioCtxRef.current.resume();
+    }
+
     if (isPlaying) {
       audio.pause();
     } else {
-      audio.play();
+      audio.play().catch(() => {});
     }
     setIsPlaying(!isPlaying);
   }, [isPlaying]);
@@ -77,7 +107,7 @@ export default function AudioPlayer({ audioUrl, onTimeUpdate }: AudioPlayerProps
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3 flex items-center gap-3">
-      <audio ref={audioRef} src={src} preload="metadata" onTimeUpdate={handleTimeUpdate} />
+      <audio ref={audioRef} src={src} preload="metadata" onTimeUpdate={handleTimeUpdate} playsInline />
 
       <button
         onClick={togglePlay}
