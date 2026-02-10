@@ -117,6 +117,17 @@ export default function OnboardingPage() {
   const lang = (nativeLang === "ja" ? "ja" : "ko") as "ko" | "ja";
   const t = labels[lang];
 
+  // Handle code exchange if magic link redirected here with ?code= param
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).then(() => {
+        window.history.replaceState({}, "", "/onboarding");
+      });
+    }
+  }, []);
+
   // On mount: check auth state and sync if needed
   useEffect(() => {
     if (!user || syncing) return;
@@ -151,8 +162,16 @@ export default function OnboardingPage() {
         setDirection("forward");
         setStep(4);
       })();
+    } else if (profile && step === 0) {
+      // User is logged in but no localStorage (e.g., magic link opened in different browser)
+      // Email verified → skip to welcome screen
+      setNativeLang(profile.native_language || "ko");
+      setLearningLang(profile.learning_language || "en");
+      if (profile.display_name) setDisplayName(profile.display_name);
+      setDirection("forward");
+      setStep(4);
     }
-  }, [user, profile, router, syncing]);
+  }, [user, profile, router, syncing, step]);
 
   const goTo = useCallback((nextStep: Step) => {
     setDirection(nextStep > step ? "forward" : "backward");
