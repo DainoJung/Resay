@@ -72,23 +72,10 @@ const labels = {
   },
 };
 
-function clearOnboardingStorage() {
-  localStorage.removeItem(STORAGE_KEYS.native);
-  localStorage.removeItem(STORAGE_KEYS.learning);
-  localStorage.removeItem(STORAGE_KEYS.name);
-}
-
-function getOnboardingData() {
-  return {
-    native: localStorage.getItem(STORAGE_KEYS.native),
-    learning: localStorage.getItem(STORAGE_KEYS.learning),
-    name: localStorage.getItem(STORAGE_KEYS.name),
-  };
-}
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, profile } = useAuth();
   const [step, setStep] = useState<Step>(0);
   const [direction, setDirection] = useState<"forward" | "backward">("forward");
   const [nativeLang, setNativeLang] = useState<string>("");
@@ -100,8 +87,6 @@ export default function OnboardingPage() {
   const [emailSent, setEmailSent] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
-
-  const [syncing, setSyncing] = useState(false);
 
   const lang = (nativeLang === "ja" ? "ja" : "ko") as "ko" | "ja";
   const t = labels[lang];
@@ -117,36 +102,12 @@ export default function OnboardingPage() {
     }
   }, []);
 
-  // On mount: check auth state and auto-complete onboarding if logged in
+  // Redirect logged-in users to home
   useEffect(() => {
-    if (!user || !profile || syncing) return;
-
-    // Already completed onboarding → go home
-    if (profile.onboarding_completed) {
+    if (user && profile?.onboarding_completed) {
       router.replace("/");
-      return;
     }
-
-    // User logged in + onboarding not completed → sync data and complete
-    setSyncing(true);
-    const data = getOnboardingData();
-
-    (async () => {
-      await supabase
-        .from("profiles")
-        .update({
-          native_language: data.native || profile.native_language || "ko",
-          learning_language: data.learning || profile.learning_language || "en",
-          display_name: data.name || profile.display_name || null,
-          onboarding_completed: true,
-        })
-        .eq("id", user.id);
-
-      clearOnboardingStorage();
-      await refreshProfile();
-      router.replace("/");
-    })();
-  }, [user, profile, router, syncing, refreshProfile]);
+  }, [user, profile, router]);
 
   const goTo = useCallback((nextStep: Step) => {
     setDirection(nextStep > step ? "forward" : "backward");

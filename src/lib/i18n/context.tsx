@@ -39,6 +39,45 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   // Sync state from profile whenever it changes; fallback to localStorage when no profile
   useEffect(() => {
     if (profile) {
+      // Check for onboarding data to sync (takes priority over profile)
+      const onboardingNative = localStorage.getItem("resay-onboarding-native");
+      const onboardingLearning = localStorage.getItem("resay-onboarding-learning");
+      const onboardingName = localStorage.getItem("resay-onboarding-name");
+
+      if (onboardingNative || onboardingLearning || onboardingName) {
+        const native = (onboardingNative || profile.native_language) as Language;
+        if (native === "ko" || native === "ja") {
+          setLangState(native);
+          document.documentElement.lang = native;
+          localStorage.setItem(STORAGE_KEY, native);
+        }
+        if (onboardingName) {
+          setUserNameState(onboardingName);
+          localStorage.setItem(NAME_STORAGE_KEY, onboardingName);
+        } else if (profile.display_name) {
+          setUserNameState(profile.display_name);
+        }
+        if (profile.tts_voice) setTtsVoiceState(profile.tts_voice as TTSVoice);
+        if (profile.tts_style) setTtsStyleState(profile.tts_style as TTSStyle);
+
+        // Sync onboarding data to DB
+        if (user) {
+          const updates: Record<string, string> = {};
+          if (onboardingNative) updates.native_language = onboardingNative;
+          if (onboardingLearning) updates.learning_language = onboardingLearning;
+          if (onboardingName) updates.display_name = onboardingName;
+          supabase.from("profiles").update(updates).eq("id", user.id);
+        }
+
+        // Clear onboarding keys
+        localStorage.removeItem("resay-onboarding-native");
+        localStorage.removeItem("resay-onboarding-learning");
+        localStorage.removeItem("resay-onboarding-name");
+        setProfileLoaded(true);
+        return;
+      }
+
+      // Normal profile sync
       const profileLang = profile.native_language as Language;
       if (profileLang === "ko" || profileLang === "ja") {
         setLangState(profileLang);
@@ -71,7 +110,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       const savedStyle = localStorage.getItem(TTS_STYLE_KEY);
       if (savedStyle) setTtsStyleState(savedStyle as TTSStyle);
     }
-  }, [profile, profileLoaded]);
+  }, [profile, profileLoaded, user]);
 
   const syncProfile = useCallback(
     (updates: Record<string, string>) => {

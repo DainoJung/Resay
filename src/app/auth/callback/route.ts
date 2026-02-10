@@ -11,9 +11,9 @@ export async function GET(req: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-      // Check if onboarding is completed
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        // Ensure onboarding is marked complete on login
         const { data: profile } = await supabase
           .from("profiles")
           .select("onboarding_completed")
@@ -21,9 +21,10 @@ export async function GET(req: NextRequest) {
           .single();
 
         if (!profile?.onboarding_completed) {
-          redirectUrl.pathname = "/onboarding";
-          redirectUrl.search = "";
-          return NextResponse.redirect(redirectUrl);
+          await supabase
+            .from("profiles")
+            .update({ onboarding_completed: true })
+            .eq("id", user.id);
         }
       }
 
