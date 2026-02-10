@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { uploadAudio, transcribeAudio } from "@/lib/assemblyai";
 import { supabaseAdmin } from "@/lib/supabase-server";
 
+export const maxDuration = 120;
+
 export async function POST(req: NextRequest) {
   let buffer: Buffer | null = null;
   let fileExt = "webm";

@@ -3,6 +3,8 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 import { uploadAudio, transcribeAudio } from "@/lib/assemblyai";
 import { generateFeedback, generateExpressions, generateTitle } from "@/lib/gemini";
 
+export const maxDuration = 120;
+
 export async function POST(req: NextRequest) {
   try {
     const { sessionId, lang, mySpeaker } = (await req.json()) as {
