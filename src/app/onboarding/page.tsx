@@ -257,10 +257,10 @@ export default function OnboardingPage() {
         {/* Step 0: Native Language */}
         <div className={`absolute inset-0 flex flex-col items-center justify-center px-8 ${slideClass(0)}`}>
           <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">
-            {nativeLang ? t.step1Title : "\uBAA8\uAD6D\uC5B4\uB97C \uC120\uD0DD\uD574 \uC8FC\uC138\uC694"}
+            {nativeLang ? t.step1Title : "Select your language"}
           </h1>
           <p className="text-gray-500 text-sm mb-10 text-center">
-            {nativeLang ? t.step1Subtitle : "\uC571\uC744 \uC5B4\uB5A4 \uC5B8\uC5B4\uB85C \uD45C\uC2DC\uD560\uAE4C\uC694?"}
+            {nativeLang ? t.step1Subtitle : "Which language would you like to use?"}
           </p>
           <div className="w-full max-w-xs space-y-3">
             {nativeLanguages.map(({ code, flag, label }) => (
@@ -280,12 +280,12 @@ export default function OnboardingPage() {
           </div>
           {/* "Already have an account?" link */}
           <div className="mt-12 text-center">
-            <span className="text-sm text-gray-400">{t.hasAccount} </span>
+            <span className="text-sm text-gray-400">{nativeLang ? t.hasAccount : "Already have an account?"} </span>
             <button
               onClick={() => router.push("/login")}
               className="text-sm text-blue-500 hover:text-blue-600 font-medium"
             >
-              {t.login}
+              {nativeLang ? t.login : "Log in"}
             </button>
           </div>
         </div>

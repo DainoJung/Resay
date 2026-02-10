@@ -36,9 +36,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [ttsStyle, setTtsStyleState] = useState<TTSStyle>("normal");
   const [profileLoaded, setProfileLoaded] = useState(false);
 
-  // Load from profile first, then fallback to localStorage
+  // Sync state from profile whenever it changes; fallback to localStorage when no profile
   useEffect(() => {
-    if (profile && !profileLoaded) {
+    if (profile) {
       const profileLang = profile.native_language as Language;
       if (profileLang === "ko" || profileLang === "ja") {
         setLangState(profileLang);
@@ -57,8 +57,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    if (!profile && !profileLoaded) {
-      // Fallback to localStorage when no profile (e.g., login page)
+    if (!profileLoaded) {
+      // Fallback to localStorage when no profile (e.g., onboarding page)
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved === "ko" || saved === "ja") {
         setLangState(saved);
