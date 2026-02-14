@@ -21,8 +21,8 @@ export const translations = {
     "error.generic": "오류가 발생했습니다.",
 
     // Record stop confirmation
-    "record.stopConfirmTitle": "음성이 감지되지 않았어요",
-    "record.stopConfirmDesc": "녹음된 내용이 없습니다. 녹음을 종료할까요?",
+    "record.stopConfirmTitle": "녹음이 너무 짧아요",
+    "record.stopConfirmDesc": "10초 이상 녹음해야 저장할 수 있어요.",
     "record.continueRecording": "계속 녹음",
     "record.stopRecording": "종료",
 
@@ -119,8 +119,8 @@ export const translations = {
     "error.generic": "エラーが発生しました。",
 
     // Record stop confirmation
-    "record.stopConfirmTitle": "音声が検出されませんでした",
-    "record.stopConfirmDesc": "録音された内容がありません。録音を終了しますか？",
+    "record.stopConfirmTitle": "録音が短すぎます",
+    "record.stopConfirmDesc": "10秒以上録音しないと保存できません。",
     "record.continueRecording": "録音を続ける",
     "record.stopRecording": "終了",
 
@@ -217,8 +217,8 @@ export const translations = {
     "error.generic": "发生错误。",
 
     // Record stop confirmation
-    "record.stopConfirmTitle": "未检测到语音",
-    "record.stopConfirmDesc": "没有录到内容。要结束录音吗？",
+    "record.stopConfirmTitle": "录音太短了",
+    "record.stopConfirmDesc": "需要录音10秒以上才能保存。",
     "record.continueRecording": "继续录音",
     "record.stopRecording": "结束",
 

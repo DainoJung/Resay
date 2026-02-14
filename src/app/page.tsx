@@ -46,7 +46,7 @@ export default function Home() {
   };
 
   const handleStop = async () => {
-    if (duration < 2) {
+    if (duration < 10) {
       setShowStopConfirm(true);
       return;
     }
@@ -282,13 +282,13 @@ export default function Home() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowStopConfirm(false)}
-                className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-emerald-500 text-white hover:bg-emerald-600 transition-colors"
               >
                 {t("record.continueRecording")}
               </button>
               <button
                 onClick={handleConfirmStop}
-                className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors"
+                className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
               >
                 {t("record.stopRecording")}
               </button>

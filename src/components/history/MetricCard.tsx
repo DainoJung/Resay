@@ -1,7 +1,9 @@
 "use client";
 
+import { ReactNode } from "react";
+
 interface MetricCardProps {
-  icon: string;
+  icon: ReactNode;
   label: string;
   score: number;
 }
@@ -17,7 +19,7 @@ export default function MetricCard({ icon, label, score }: MetricCardProps) {
     <div className="bg-white rounded-2xl border border-gray-100 p-4 flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-lg">{icon}</span>
+          {icon}
           <span className="text-sm font-medium text-gray-700">{label}</span>
         </div>
         <span className="text-sm font-bold text-gray-900">{score}</span>
