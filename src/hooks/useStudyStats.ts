@@ -1,19 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth/context";
 
 interface StudyStats {
   streak: number;
   weeklyMinutes: number;
+  todaySeconds: number;
   loading: boolean;
+  refreshTodaySeconds: () => Promise<void>;
 }
 
 export function useStudyStats(): StudyStats {
   const { user } = useAuth();
   const [streak, setStreak] = useState(0);
   const [weeklyMinutes, setWeeklyMinutes] = useState(0);
+  const [todaySeconds, setTodaySeconds] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -78,6 +81,9 @@ export function useStudyStats(): StudyStats {
           );
           setWeeklyMinutes(Math.round(totalSeconds / 60));
         }
+
+        // 3) 오늘 녹음 시간 (초)
+        await fetchTodaySeconds();
       } catch {
         // 실패 시 기본값 유지
       } finally {
@@ -88,5 +94,22 @@ export function useStudyStats(): StudyStats {
     fetch();
   }, [user]);
 
-  return { streak, weeklyMinutes, loading };
+  const fetchTodaySeconds = useCallback(async () => {
+    if (!user) return;
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const { data } = await supabase
+      .from("sessions")
+      .select("duration")
+      .eq("user_id", user.id)
+      .eq("status", "completed")
+      .gte("created_at", todayStart.toISOString());
+
+    if (data) {
+      setTodaySeconds(data.reduce((sum, s) => sum + (s.duration || 0), 0));
+    }
+  }, [user]);
+
+  return { streak, weeklyMinutes, todaySeconds, loading, refreshTodaySeconds: fetchTodaySeconds };
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
@@ -26,7 +26,12 @@ export default function Home() {
   const { isRecording, duration, startRecording, stopRecording, error: recorderError } =
     useAudioRecorder();
   const { t, lang, userName } = useLanguage();
-  const { streak, weeklyMinutes, loading: statsLoading } = useStudyStats();
+  const { streak, weeklyMinutes, todaySeconds, loading: statsLoading, refreshTodaySeconds } = useStudyStats();
+
+  const MAX_SINGLE = 300; // 5분
+  const MAX_DAILY = 600;  // 10분
+  const dailyRemaining = Math.max(0, MAX_DAILY - todaySeconds);
+  const sessionMax = Math.min(MAX_SINGLE, dailyRemaining);
 
   const [status, setStatus] = useState<Status>("idle");
   const [utterances, setUtterances] = useState<Utterance[]>([]);
@@ -36,11 +41,25 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [showStopConfirm, setShowStopConfirm] = useState(false);
 
+  // 5분 또는 일일 잔여 시간 도달 시 자동 중지
+  const autoStopTriggered = useRef(false);
+  useEffect(() => {
+    if (status === "recording" && duration >= sessionMax && !autoStopTriggered.current) {
+      autoStopTriggered.current = true;
+      processRecording();
+    }
+  }, [duration, status, sessionMax]);
+
   const handleStart = async () => {
+    if (dailyRemaining <= 0) {
+      setError(t("record.dailyLimitReached"));
+      return;
+    }
     setError(null);
     setUtterances([]);
     setSpeakers([]);
     setTranscript("");
+    autoStopTriggered.current = false;
     setStatus("recording");
     await startRecording();
   };
@@ -146,6 +165,7 @@ export default function Home() {
         throw new Error(feedbackData.error || t("error.feedbackFailed"));
       }
 
+      await refreshTodaySeconds();
       router.push(`/history?id=${feedbackData.sessionId}`);
       setStatus("idle");
     } catch (err) {

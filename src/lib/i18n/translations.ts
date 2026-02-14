@@ -25,6 +25,7 @@ export const translations = {
     "record.stopConfirmDesc": "10초 이상 녹음해야 저장할 수 있어요.",
     "record.continueRecording": "계속 녹음",
     "record.stopRecording": "종료",
+    "record.dailyLimitReached": "오늘 녹음 가능 시간(10분)을 모두 사용했어요.",
 
     // Speaker selector
     "speaker.title": "나는 누구인가요?",
@@ -123,6 +124,7 @@ export const translations = {
     "record.stopConfirmDesc": "10秒以上録音しないと保存できません。",
     "record.continueRecording": "録音を続ける",
     "record.stopRecording": "終了",
+    "record.dailyLimitReached": "今日の録音可能時間（10分）を使い切りました。",
 
     // Speaker selector
     "speaker.title": "あなたはどちらですか？",
@@ -221,6 +223,7 @@ export const translations = {
     "record.stopConfirmDesc": "需要录音10秒以上才能保存。",
     "record.continueRecording": "继续录音",
     "record.stopRecording": "结束",
+    "record.dailyLimitReached": "今天的录音时间（10分钟）已用完。",
 
     // Speaker selector
     "speaker.title": "你是哪一位？",
