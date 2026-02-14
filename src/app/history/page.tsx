@@ -12,6 +12,7 @@ import ExpressionCarousel from "@/components/history/ExpressionCarousel";
 import SpeakerSelector from "@/components/SpeakerSelector";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/context";
+import { useAuth } from "@/lib/auth/context";
 
 type MainTab = "calls" | "saved";
 
@@ -43,6 +44,7 @@ function HistoryContent() {
     utterances: Utterance[];
   } | null>(null);
   const { t, lang } = useLanguage();
+  const { user, loading: authLoading } = useAuth();
 
   const fetchSessions = useCallback(async () => {
     const { data: sessionsData } = await supabase
@@ -90,8 +92,10 @@ function HistoryContent() {
   }, []);
 
   useEffect(() => {
-    fetchSessions();
-  }, [fetchSessions]);
+    if (!authLoading && user) {
+      fetchSessions();
+    }
+  }, [authLoading, user, fetchSessions]);
 
   // Auto-select session from URL param
   useEffect(() => {

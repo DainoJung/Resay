@@ -4,6 +4,11 @@ import { createSupabaseMiddlewareClient } from "@/lib/supabase-middleware";
 const PUBLIC_PATHS = ["/login", "/auth/callback", "/onboarding"];
 
 export async function middleware(req: NextRequest) {
+  // Skip auth in local development
+  if (process.env.NODE_ENV === "development") {
+    return NextResponse.next();
+  }
+
   const { pathname } = req.nextUrl;
 
   // Allow public paths and API routes

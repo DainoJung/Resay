@@ -26,12 +26,17 @@ const STORAGE_KEY = "resay-lang";
 const NAME_STORAGE_KEY = "resay-user-name";
 const TTS_VOICE_KEY = "resay-tts-voice";
 const TTS_STYLE_KEY = "resay-tts-style";
-const DEFAULT_NAME = "Tomo";
+const DEFAULT_NAME = "";
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const { user, profile } = useAuth();
   const [lang, setLangState] = useState<Language>("ko");
-  const [userName, setUserNameState] = useState(DEFAULT_NAME);
+  const [userName, setUserNameState] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem(NAME_STORAGE_KEY) || DEFAULT_NAME;
+    }
+    return DEFAULT_NAME;
+  });
   const [ttsVoice, setTtsVoiceState] = useState<TTSVoice>("Puck");
   const [ttsStyle, setTtsStyleState] = useState<TTSStyle>("normal");
   const [profileLoaded, setProfileLoaded] = useState(false);
@@ -115,7 +120,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const syncProfile = useCallback(
     (updates: Record<string, string>) => {
       if (user) {
-        supabase.from("profiles").update(updates).eq("id", user.id).then(() => {});
+        supabase.from("profiles").update(updates).eq("id", user.id).then(() => { });
       }
     },
     [user]
