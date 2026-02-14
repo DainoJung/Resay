@@ -1,5 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-import { GeminiFeedbackItem, GeminiExpressionItem } from "@/types";
+import { GeminiFeedbackItem, GeminiExpressionItem, GeminiEvaluationResult } from "@/types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
@@ -185,6 +185,68 @@ export async function generateTitle(transcript: string, lang: string = "ko"): Pr
   });
 
   return response.text?.trim().slice(0, 30) || "";
+}
+
+export async function generateEvaluation(
+  originals: string[],
+  paraphrases: string[],
+  transcript: string
+): Promise<GeminiEvaluationResult | null> {
+  try {
+    const pairs = originals
+      .map((o, i) => `Original: ${o}\nImproved: ${paraphrases[i] || o}`)
+      .join("\n---\n");
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              text: `Evaluate this English speaker's proficiency based on their original utterances and the improved versions.\n\nUtterance pairs:\n${pairs}\n\nFull transcript:\n${transcript}`,
+            },
+          ],
+        },
+      ],
+      config: {
+        systemInstruction: `You are an English proficiency evaluator. Score the speaker on 4 dimensions (0-100 each):
+
+- grammar_score: Grammatical accuracy (tense, articles, prepositions, subject-verb agreement)
+- vocabulary_score: Range and appropriateness of vocabulary
+- fluency_score: Flow, coherence, and ability to express ideas smoothly
+- naturalness_score: How natural and native-like the speech sounds
+
+Compare the original utterances with the improved versions to assess the gap.
+A score of 100 means native-level proficiency. A score of 0 means no proficiency at all.
+Be fair but constructive. Most intermediate learners score 50-75.
+
+Respond with ONLY a JSON object. No markdown, no code blocks, no extra text.
+Example: {"grammar_score": 65, "vocabulary_score": 70, "fluency_score": 60, "naturalness_score": 55}`,
+        temperature: 0.2,
+      },
+    });
+
+    const text = response.text?.trim() || "{}";
+    const cleaned = text
+      .replace(/^```json?\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
+
+    const parsed = JSON.parse(cleaned);
+    if (
+      typeof parsed.grammar_score === "number" &&
+      typeof parsed.vocabulary_score === "number" &&
+      typeof parsed.fluency_score === "number" &&
+      typeof parsed.naturalness_score === "number"
+    ) {
+      return parsed as GeminiEvaluationResult;
+    }
+    return null;
+  } catch (err) {
+    console.error("Failed to generate evaluation:", err);
+    return null;
+  }
 }
 
 const stylePrompts: Record<string, string> = {

@@ -5,6 +5,11 @@ export const translations = {
     // Nav
     "nav.history": "기록",
 
+    // Home - study stats
+    "stats.streak": "일 연속 학습 중",
+    "stats.weeklyMinutes": "이번 주 {m}분 녹음",
+    "stats.weeklyNoRecord": "이번 주 첫 녹음을 해보세요!",
+
     // Home - status messages
     "status.transcribing": "음성을 텍스트로 변환 중...",
     "status.analyzing": "AI가 피드백을 생성하는 중...",
@@ -49,6 +54,18 @@ export const translations = {
     "history.deleteConfirmDesc": "삭제하면 되돌릴 수 없습니다.",
     "history.cancel": "취소",
 
+    // Session Report
+    "report.title": "영어 실력 리포트",
+    "report.grammar": "문법",
+    "report.vocabulary": "어휘력",
+    "report.fluency": "유창성",
+    "report.naturalness": "자연스러움",
+    "report.excellent": "Excellent",
+    "report.good": "Good",
+    "report.fair": "Fair",
+    "report.keepTrying": "Keep trying",
+    "report.needsPractice": "Needs practice",
+
     // Audio recorder errors
     "recorder.error": "녹음 중 오류가 발생했습니다.",
     "recorder.permissionDenied": "마이크 사용 권한이 필요합니다. 브라우저 설정에서 허용해 주세요.",
@@ -85,6 +102,11 @@ export const translations = {
   ja: {
     // Nav
     "nav.history": "履歴",
+
+    // Home - study stats
+    "stats.streak": "日連続学習中",
+    "stats.weeklyMinutes": "今週 {m}分録音",
+    "stats.weeklyNoRecord": "今週の最初の録音をしてみましょう！",
 
     // Home - status messages
     "status.transcribing": "音声をテキストに変換中...",
@@ -130,6 +152,18 @@ export const translations = {
     "history.deleteConfirmDesc": "削除すると元に戻せません。",
     "history.cancel": "キャンセル",
 
+    // Session Report
+    "report.title": "英語力レポート",
+    "report.grammar": "文法",
+    "report.vocabulary": "語彙力",
+    "report.fluency": "流暢さ",
+    "report.naturalness": "自然さ",
+    "report.excellent": "Excellent",
+    "report.good": "Good",
+    "report.fair": "Fair",
+    "report.keepTrying": "Keep trying",
+    "report.needsPractice": "Needs practice",
+
     // Audio recorder errors
     "recorder.error": "録音中にエラーが発生しました。",
     "recorder.permissionDenied": "マイクの使用許可が必要です。ブラウザの設定で許可してください。",
@@ -166,6 +200,11 @@ export const translations = {
   zh: {
     // Nav
     "nav.history": "记录",
+
+    // Home - study stats
+    "stats.streak": "天连续学习中",
+    "stats.weeklyMinutes": "本周录音 {m}分钟",
+    "stats.weeklyNoRecord": "来录下本周的第一段吧！",
 
     // Home - status messages
     "status.transcribing": "正在将语音转换为文字...",
@@ -210,6 +249,18 @@ export const translations = {
     "history.deleteConfirm": "要删除这段录音吗？",
     "history.deleteConfirmDesc": "删除后将无法恢复。",
     "history.cancel": "取消",
+
+    // Session Report
+    "report.title": "英语水平报告",
+    "report.grammar": "语法",
+    "report.vocabulary": "词汇量",
+    "report.fluency": "流利度",
+    "report.naturalness": "自然度",
+    "report.excellent": "Excellent",
+    "report.good": "Good",
+    "report.fair": "Fair",
+    "report.keepTrying": "Keep trying",
+    "report.needsPractice": "Needs practice",
 
     // Audio recorder errors
     "recorder.error": "录音时发生错误。",

@@ -10,6 +10,7 @@ import AudioPlayer from "@/components/AudioPlayer";
 import SavedView from "@/components/history/SavedView";
 import ExpressionCarousel from "@/components/history/ExpressionCarousel";
 import SpeakerSelector from "@/components/SpeakerSelector";
+import SessionReport from "@/components/history/SessionReport";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
@@ -290,6 +291,17 @@ function HistoryContent() {
               ))}
             </div>
           ) : <>
+          {/* Session Report */}
+          {selectedSession.overall_score != null && (
+            <SessionReport
+              overallScore={selectedSession.overall_score}
+              grammarScore={selectedSession.grammar_score ?? 0}
+              vocabularyScore={selectedSession.vocabulary_score ?? 0}
+              fluencyScore={selectedSession.fluency_score ?? 0}
+              naturalnessScore={selectedSession.naturalness_score ?? 0}
+            />
+          )}
+
           {/* AI Recommended Expressions */}
           {selectedSession.expressions && selectedSession.expressions.length > 0 && (
             <div className="mb-8">

@@ -10,6 +10,7 @@ import RecordingStatus from "@/components/RecordingStatus";
 import SpeakerSelector from "@/components/SpeakerSelector";
 import ProcessingScreen from "@/components/ProcessingScreen";
 import { useLanguage } from "@/lib/i18n/context";
+import { useStudyStats } from "@/hooks/useStudyStats";
 import { GiStack } from "react-icons/gi";
 
 type Status =
@@ -25,6 +26,7 @@ export default function Home() {
   const { isRecording, duration, startRecording, stopRecording, error: recorderError } =
     useAudioRecorder();
   const { t, lang, userName } = useLanguage();
+  const { streak, weeklyMinutes, loading: statsLoading } = useStudyStats();
 
   const [status, setStatus] = useState<Status>("idle");
   const [utterances, setUtterances] = useState<Utterance[]>([]);
@@ -180,12 +182,30 @@ export default function Home() {
       </div>
 
       {/* Center content area */}
-      <div className="flex-1 flex flex-col items-center justify-top px-4 pb-40">
+      <div className="flex-1 flex flex-col items-center px-4 pb-40">
         {/* Partner name - hide during processing */}
         {!isProcessing && status !== "selecting-speaker" && (
           <h1 className="text-3xl font-bold italic text-gray-900 mt-20">
             {userName}
           </h1>
+        )}
+
+        {/* Study stats - centered between name and record button */}
+        {!isProcessing && status !== "selecting-speaker" && !statsLoading && (
+          <div className="flex-1 flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center gap-2">
+              {streak > 0 && (
+                <p className="text-lg font-medium text-gray-700">
+                  🔥 {streak}{t("stats.streak")}
+                </p>
+              )}
+              <p className="text-lg font-medium text-gray-700">
+                {weeklyMinutes > 0
+                  ? `📊 ${t("stats.weeklyMinutes").replace("{m}", String(weeklyMinutes))}`
+                  : `📊 ${t("stats.weeklyNoRecord")}`}
+              </p>
+            </div>
+          </div>
         )}
 
         {/* Recording status (timer) */}

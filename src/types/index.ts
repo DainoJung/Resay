@@ -42,6 +42,11 @@ export interface Session {
   expressions?: Expression[];
   status?: string;
   user_id?: string;
+  grammar_score?: number | null;
+  vocabulary_score?: number | null;
+  fluency_score?: number | null;
+  naturalness_score?: number | null;
+  overall_score?: number | null;
 }
 
 export interface GeminiFeedbackItem {
@@ -56,4 +61,11 @@ export interface GeminiExpressionItem {
   meaning: string;
   example: string;
   highlight_word: string;
+}
+
+export interface GeminiEvaluationResult {
+  grammar_score: number;
+  vocabulary_score: number;
+  fluency_score: number;
+  naturalness_score: number;
 }

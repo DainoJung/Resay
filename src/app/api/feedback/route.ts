@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
-import { generateFeedback, generateExpressions, generateTitle } from "@/lib/gemini";
+import { generateFeedback, generateExpressions, generateTitle, generateEvaluation } from "@/lib/gemini";
 import { Utterance } from "@/types";
 import { getUserFromRequest } from "@/lib/auth/get-user";
 
@@ -38,6 +38,27 @@ export async function POST(req: NextRequest) {
       generateTitle(transcript, userLang),
     ]);
 
+    // Generate evaluation scores (after feedback so we have paraphrases)
+    const originals = feedbackItems.map((item) => item.original);
+    const paraphrases = feedbackItems.map((item) => item.paraphrase);
+    const evaluation = await generateEvaluation(originals, paraphrases, transcript);
+
+    let grammarScore: number | null = null;
+    let vocabularyScore: number | null = null;
+    let fluencyScore: number | null = null;
+    let naturalnessScore: number | null = null;
+    let overallScore: number | null = null;
+
+    if (evaluation) {
+      grammarScore = evaluation.grammar_score;
+      vocabularyScore = evaluation.vocabulary_score;
+      fluencyScore = evaluation.fluency_score;
+      naturalnessScore = evaluation.naturalness_score;
+      overallScore = Math.round(
+        grammarScore * 0.3 + fluencyScore * 0.3 + vocabularyScore * 0.2 + naturalnessScore * 0.2
+      );
+    }
+
     // Save session to Supabase
     const { data: session, error: sessionError } = await supabaseAdmin
       .from("sessions")
@@ -50,6 +71,11 @@ export async function POST(req: NextRequest) {
         title: title || null,
         duration: duration || null,
         user_id: userId,
+        grammar_score: grammarScore,
+        vocabulary_score: vocabularyScore,
+        fluency_score: fluencyScore,
+        naturalness_score: naturalnessScore,
+        overall_score: overallScore,
       })
       .select("id")
       .single();
