@@ -2,7 +2,6 @@
 
 import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useLanguage, TTSVoice, TTSStyle } from "@/lib/i18n/context";
 import { useAuth } from "@/lib/auth/context";
 import { Language } from "@/lib/i18n/translations";
@@ -40,7 +39,6 @@ const styles: { id: TTSStyle; labelKey: "settings.ttsStyle.normal" | "settings.t
 export default function SettingsPage() {
   const { lang, setLang, t, userName, setUserName, ttsVoice, setTtsVoice, ttsStyle, setTtsStyle } = useLanguage();
   const { user, signOut } = useAuth();
-  const router = useRouter();
   const [previewingVoice, setPreviewingVoice] = useState<string | null>(null);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -98,7 +96,7 @@ export default function SettingsPage() {
 
   const handleLogout = async () => {
     await signOut();
-    router.replace("/login");
+    window.location.href = "/login";
   };
 
   return (

@@ -70,19 +70,19 @@ export default function LoginPage() {
             <span className="font-medium text-gray-700">{email}</span>
           </p>
           <p className="text-gray-500 text-sm mb-6">
-            이메일로 전송된 6자리 코드를 입력해 주세요.
+            이메일로 전송된 8자리 코드를 입력해 주세요.
           </p>
 
           <form onSubmit={handleVerifyOtp} className="space-y-4">
             <input
               type="text"
               value={otp}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="000000"
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 8))}
+              placeholder="00000000"
               autoFocus
               inputMode="numeric"
-              maxLength={6}
-              className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-4 text-gray-900 placeholder-gray-300 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-colors text-center text-2xl tracking-[0.5em] font-mono"
+              maxLength={8}
+              className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-4 text-gray-900 placeholder-gray-300 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-colors text-center text-2xl tracking-[0.3em] font-mono"
             />
 
             {error && (
@@ -91,7 +91,7 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={loading || otp.length < 6}
+              disabled={loading || otp.length < 8}
               className="w-full rounded-2xl bg-blue-500 py-4 text-white font-semibold text-base transition-colors hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
@@ -166,7 +166,7 @@ export default function LoginPage() {
         </form>
 
         <p className="mt-6 text-center text-xs text-gray-400">
-          이메일로 전송되는 6자리 코드를 입력하면 로그인됩니다.
+          이메일로 전송되는 8자리 코드를 입력하면 로그인됩니다.
           <br />
           비밀번호가 필요 없어요.
         </p>
