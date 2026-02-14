@@ -10,6 +10,7 @@ import { Language } from "@/lib/i18n/translations";
 const languages: { code: Language; flag: string; label: string }[] = [
   { code: "ko", flag: "\uD83C\uDDF0\uD83C\uDDF7", label: "\uD55C\uAD6D\uC5B4" },
   { code: "ja", flag: "\uD83C\uDDEF\uD83C\uDDF5", label: "\u65E5\u672C\u8A9E" },
+  { code: "zh", flag: "\uD83C\uDDE8\uD83C\uDDF3", label: "\u4E2D\u6587" },
 ];
 
 const targetLanguages: { code: string; flag: string; label: string; available: boolean }[] = [

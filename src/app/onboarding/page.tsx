@@ -16,6 +16,7 @@ const STORAGE_KEYS = {
 const nativeLanguages = [
   { code: "ko", flag: "\uD83C\uDDF0\uD83C\uDDF7", label: "\uD55C\uAD6D\uC5B4" },
   { code: "ja", flag: "\uD83C\uDDEF\uD83C\uDDF5", label: "\u65E5\u672C\u8A9E" },
+  { code: "zh", flag: "\uD83C\uDDE8\uD83C\uDDF3", label: "\u4E2D\u6587" },
 ];
 
 const learningLanguages = [
@@ -70,6 +71,28 @@ const labels = {
     hasAccount: "\u3059\u3067\u306B\u30A2\u30AB\u30A6\u30F3\u30C8\u3092\u304A\u6301\u3061\u3067\u3059\u304B\uFF1F",
     login: "\u30ED\u30B0\u30A4\u30F3",
   },
+  zh: {
+    step1Title: "选择你的母语",
+    step1Subtitle: "应用将以哪种语言显示？",
+    step2Title: "你想学什么？",
+    step2Subtitle: "选择你想获得反馈的语言",
+    step2ComingSoon: "即将推出",
+    step3Title: "告诉我们你的名字",
+    step3Subtitle: "会显示在主页上",
+    step3Placeholder: "请输入名字",
+    step3Next: "下一步",
+    step4Title: "用邮箱开始",
+    step4Subtitle: "安全保存和同步你的数据",
+    step4Placeholder: "邮箱地址",
+    step4Send: "获取登录链接",
+    step4Sending: "发送中...",
+    step4SentTitle: "请查看邮箱",
+    step4SentDesc: "登录链接已发送，请查看你的邮箱。",
+    step4Retry: "换一个邮箱",
+    step4Note: "无需密码，仅通过邮箱即可登录。",
+    hasAccount: "已有账户？",
+    login: "登录",
+  },
 };
 
 
@@ -88,7 +111,7 @@ export default function OnboardingPage() {
   const [emailLoading, setEmailLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
 
-  const lang = (nativeLang === "ja" ? "ja" : "ko") as "ko" | "ja";
+  const lang = (nativeLang === "ja" ? "ja" : nativeLang === "zh" ? "zh" : "ko") as "ko" | "ja" | "zh";
   const t = labels[lang];
 
   // Handle code exchange if magic link redirected here with ?code= param

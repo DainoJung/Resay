@@ -46,7 +46,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
       if (onboardingNative || onboardingLearning || onboardingName) {
         const native = (onboardingNative || profile.native_language) as Language;
-        if (native === "ko" || native === "ja") {
+        if (native === "ko" || native === "ja" || native === "zh") {
           setLangState(native);
           document.documentElement.lang = native;
           localStorage.setItem(STORAGE_KEY, native);
@@ -79,7 +79,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
       // Normal profile sync
       const profileLang = profile.native_language as Language;
-      if (profileLang === "ko" || profileLang === "ja") {
+      if (profileLang === "ko" || profileLang === "ja" || profileLang === "zh") {
         setLangState(profileLang);
         document.documentElement.lang = profileLang;
       }
@@ -99,7 +99,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     if (!profileLoaded) {
       // Fallback to localStorage when no profile (e.g., onboarding page)
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved === "ko" || saved === "ja") {
+      if (saved === "ko" || saved === "ja" || saved === "zh") {
         setLangState(saved);
         document.documentElement.lang = saved;
       }

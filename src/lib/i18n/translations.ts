@@ -1,4 +1,4 @@
-export type Language = "ko" | "ja";
+export type Language = "ko" | "ja" | "zh";
 
 export const translations = {
   ko: {
@@ -162,6 +162,87 @@ export const translations = {
     "settings.logoutConfirm": "ログアウトしますか？",
     "settings.logoutConfirmDesc": "再度ログインするにはメール認証が必要です。",
     "settings.cancel": "キャンセル",
+  },
+  zh: {
+    // Nav
+    "nav.history": "记录",
+
+    // Home - status messages
+    "status.transcribing": "正在将语音转换为文字...",
+    "status.analyzing": "AI正在生成反馈...",
+
+    // Home - errors
+    "error.transcribeFailed": "语音转换失败，请重试。",
+    "error.noSpeech": "未检测到语音，请说得更大声、更清晰。",
+    "error.feedbackFailed": "反馈生成失败，请重试。",
+    "error.generic": "发生错误。",
+
+    // Record stop confirmation
+    "record.stopConfirmTitle": "未检测到语音",
+    "record.stopConfirmDesc": "没有录到内容。要结束录音吗？",
+    "record.continueRecording": "继续录音",
+    "record.stopRecording": "结束",
+
+    // Speaker selector
+    "speaker.title": "你是哪一位？",
+    "speaker.description": "请选择你的声音",
+
+    // Chat view
+    "chat.correctionsCount": "处需要纠正",
+    "chat.perfect": "太棒了！没有需要纠正的地方。",
+
+    // History
+    "history.title": "记录",
+    "history.empty.title": "还没有记录",
+    "history.empty.description": "开始录音后，记录会在这里显示。",
+    "history.noCorrections": "没有需要纠正的地方。",
+    "history.tab.calls": "录音",
+    "history.tab.saved": "收藏",
+    "history.saved.expressions": "表达",
+    "history.saved.sentences": "句子",
+    "history.saved.empty": "还没有收藏的内容",
+    "history.detail.expressions": "为你量身定制的地道表达",
+    "history.detail.callContent": "录音内容",
+    "history.transcriptionFailed": "转换失败",
+    "history.retry": "重试",
+    "history.retrying": "重试中...",
+    "history.delete": "删除",
+    "history.deleteConfirm": "要删除这段录音吗？",
+    "history.deleteConfirmDesc": "删除后将无法恢复。",
+    "history.cancel": "取消",
+
+    // Audio recorder errors
+    "recorder.error": "录音时发生错误。",
+    "recorder.permissionDenied": "需要麦克风权限，请在浏览器设置中允许。",
+    "recorder.unavailable": "无法使用麦克风。",
+
+    // Settings
+    "settings.title": "设置",
+    "settings.name": "名字",
+    "settings.nameDescription": "显示在主页上的名字",
+    "settings.namePlaceholder": "请输入名字",
+    "settings.language": "语言",
+    "settings.languageDescription": "选择应用显示语言",
+    "settings.targetLanguage": "学习语言",
+    "settings.targetLanguageDescription": "选择你想获得反馈的语言",
+    "settings.comingSoon": "即将推出",
+    "settings.ttsVoice": "语音",
+    "settings.ttsVoiceDescription": "选择TTS语音",
+    "settings.ttsStyle": "说话风格",
+    "settings.ttsStyleDescription": "调整TTS的速度和语调",
+    "settings.ttsStyle.normal": "正常",
+    "settings.ttsStyle.slow": "慢速",
+    "settings.ttsStyle.fast": "快速",
+    "settings.ttsStyle.calm": "平静",
+    "settings.ttsStyle.energetic": "活力",
+
+    // Settings - Account
+    "settings.account": "账户",
+    "settings.accountDescription": "登录信息和账户管理",
+    "settings.logout": "退出登录",
+    "settings.logoutConfirm": "确定要退出登录吗？",
+    "settings.logoutConfirmDesc": "重新登录需要邮箱验证。",
+    "settings.cancel": "取消",
   },
 } as const;
 
