@@ -6,6 +6,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 const explanationLanguage: Record<string, string> = {
   ko: "IN KOREAN (한국어로 설명)",
   ja: "IN JAPANESE (日本語で説明)",
+  zh: "IN CHINESE (用中文解释)",
 };
 
 function getSystemPrompt(lang: string): string {
@@ -33,13 +34,13 @@ Example response:
   {
     "original": "I have been to there yesterday. Can you help me?",
     "paraphrase": "I went there yesterday. Could you help me?",
-    "explanation": "${lang === "ja" ? "「have been」は「yesterday」と一緒に使えません。過去形「went」が正しいです。また「Could you」の方が「Can you」より丁寧です。" : "'have been'은 'yesterday'와 함께 쓸 수 없어요. 과거형 'went'가 맞습니다. 또한 'Could you'가 'Can you'보다 더 공손한 표현이에요."}",
+    "explanation": "${lang === "ja" ? "「have been」は「yesterday」と一緒に使えません。過去形「went」が正しいです。また「Could you」の方が「Can you」より丁寧です。" : lang === "zh" ? "'have been'不能和'yesterday'一起使用。应该用过去式'went'。另外'Could you'比'Can you'更礼貌。" : "'have been'은 'yesterday'와 함께 쓸 수 없어요. 과거형 'went'가 맞습니다. 또한 'Could you'가 'Can you'보다 더 공손한 표현이에요."}",
     "is_perfect": false
   },
   {
     "original": "That sounds great, thank you!",
     "paraphrase": "That sounds wonderful, thanks a lot!",
-    "explanation": "${lang === "ja" ? "完璧です！「That sounds wonderful」も自然です。" : "완벽해요! 'That sounds wonderful'도 자연스러워요."}",
+    "explanation": "${lang === "ja" ? "完璧です！「That sounds wonderful」も自然です。" : lang === "zh" ? "太棒了！'That sounds wonderful'也很自然。" : "완벽해요! 'That sounds wonderful'도 자연스러워요."}",
     "is_perfect": true
   }
 ]`;
@@ -100,7 +101,7 @@ Example response:
 [
   {
     "keyword": "come in handy",
-    "meaning": "${lang === "ja" ? "役に立つ" : "유용하게 쓰이다"}",
+    "meaning": "${lang === "ja" ? "役に立つ" : lang === "zh" ? "派上用场" : "유용하게 쓰이다"}",
     "example": "This tool will come in handy when you need to fix things.",
     "highlight_word": "come in handy"
   }
@@ -142,6 +143,7 @@ export async function generateTranslation(sentence: string, lang: string = "ko")
   const langMap: Record<string, string> = {
     ko: "한국어",
     ja: "日本語",
+    zh: "中文",
   };
   const targetLang = langMap[lang] || langMap.ko;
 
@@ -165,6 +167,7 @@ export async function generateTitle(transcript: string, lang: string = "ko"): Pr
   const langMap: Record<string, string> = {
     ko: "한국어",
     ja: "日本語",
+    zh: "中文",
   };
   const targetLang = langMap[lang] || langMap.ko;
 
