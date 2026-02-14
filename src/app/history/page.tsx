@@ -36,6 +36,7 @@ function HistoryContent() {
   const [retryError, setRetryError] = useState<string | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [currentTimeMs, setCurrentTimeMs] = useState(0);
+  const [detailLoading, setDetailLoading] = useState(false);
   const [retrySpeakerData, setRetrySpeakerData] = useState<{
     sessionId: string;
     speakers: string[];
@@ -46,67 +47,81 @@ function HistoryContent() {
   const fetchSessions = useCallback(async () => {
     const { data: sessionsData } = await supabase
       .from("sessions")
-      .select("*")
+      .select("id, created_at, transcript, title, status, duration, audio_url, feedback_count")
       .order("created_at", { ascending: false })
       .limit(50);
 
-    if (!sessionsData) {
-      setLoading(false);
-      return;
+    if (sessionsData) {
+      setSessions(sessionsData as Session[]);
     }
+    setLoading(false);
+  }, []);
 
-    const sessionIds = sessionsData.map((s) => s.id);
-    const [{ data: feedbacksData }, { data: expressionsData }] = await Promise.all([
+  const fetchSessionDetail = useCallback(async (sessionId: string): Promise<Session | null> => {
+    const [{ data: sessionData }, { data: feedbacksData }, { data: expressionsData }] = await Promise.all([
+      supabase
+        .from("sessions")
+        .select("*")
+        .eq("id", sessionId)
+        .single(),
       supabase
         .from("feedbacks")
         .select("*")
-        .in("session_id", sessionIds)
+        .eq("session_id", sessionId)
         .order("created_at", { ascending: true }),
       supabase
         .from("expressions")
         .select("*")
-        .in("session_id", sessionIds)
+        .eq("session_id", sessionId)
         .order("created_at", { ascending: true }),
     ]);
 
-    const sessionsWithFeedbacks: Session[] = sessionsData.map((session) => ({
-      ...session,
+    if (!sessionData) return null;
+
+    return {
+      ...sessionData,
       utterances:
-        typeof session.utterances === "string"
-          ? JSON.parse(session.utterances)
-          : session.utterances || [],
-      feedbacks: feedbacksData?.filter((fb) => fb.session_id === session.id) || [],
-      expressions: expressionsData?.filter((ex) => ex.session_id === session.id) || [],
-    }));
-
-    setSessions(sessionsWithFeedbacks);
-
-    // Auto-select session from query param
-    if (sessionIdParam) {
-      const target = sessionsWithFeedbacks.find((s) => s.id === sessionIdParam);
-      if (target && target.status !== "transcription_failed") {
-        setSelectedSession(target);
-        const savedIds = new Set(
-          (target.feedbacks || []).filter((fb) => fb.saved).map((fb) => fb.id)
-        );
-        setSavedFeedbackIds(savedIds);
-      }
-    }
-
-    setLoading(false);
-  }, [sessionIdParam]);
+        typeof sessionData.utterances === "string"
+          ? JSON.parse(sessionData.utterances)
+          : sessionData.utterances || [],
+      feedbacks: feedbacksData || [],
+      expressions: expressionsData || [],
+    };
+  }, []);
 
   useEffect(() => {
     fetchSessions();
   }, [fetchSessions]);
 
-  const handleSelectSession = useCallback((session: Session) => {
+  // Auto-select session from URL param
+  useEffect(() => {
+    if (!sessionIdParam) return;
+    setDetailLoading(true);
+    fetchSessionDetail(sessionIdParam).then((session) => {
+      if (session && session.status !== "transcription_failed") {
+        setSelectedSession(session);
+        const savedIds = new Set(
+          (session.feedbacks || []).filter((fb) => fb.saved).map((fb) => fb.id)
+        );
+        setSavedFeedbackIds(savedIds);
+      }
+      setDetailLoading(false);
+    });
+  }, [sessionIdParam, fetchSessionDetail]);
+
+  const handleSelectSession = useCallback(async (session: Session) => {
     setSelectedSession(session);
-    const savedIds = new Set(
-      (session.feedbacks || []).filter((fb) => fb.saved).map((fb) => fb.id)
-    );
-    setSavedFeedbackIds(savedIds);
-  }, []);
+    setDetailLoading(true);
+    const detailed = await fetchSessionDetail(session.id);
+    if (detailed) {
+      setSelectedSession(detailed);
+      const savedIds = new Set(
+        (detailed.feedbacks || []).filter((fb) => fb.saved).map((fb) => fb.id)
+      );
+      setSavedFeedbackIds(savedIds);
+    }
+    setDetailLoading(false);
+  }, [fetchSessionDetail]);
 
   const handleRetry = useCallback(async (sessionId: string) => {
     setRetryingId(sessionId);
@@ -133,8 +148,8 @@ function HistoryContent() {
         return;
       }
 
-      // Success - refresh and navigate to session
-      await fetchSessions();
+      // Success - refresh list and navigate to session detail
+      fetchSessions();
       router.push(`/history?id=${sessionId}`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : t("error.generic");
@@ -162,7 +177,7 @@ function HistoryContent() {
         throw new Error(data.error);
       }
 
-      await fetchSessions();
+      fetchSessions();
       router.push(`/history?id=${sessionId}`);
     } catch (err) {
       console.error("Retry speaker select failed:", err);
@@ -255,6 +270,22 @@ function HistoryContent() {
         </div>
 
         <div className="px-4 pt-4 pb-24">
+          {detailLoading ? (
+            <div className="space-y-4 animate-pulse">
+              <div className="h-28 bg-gray-100 rounded-2xl" />
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-gray-200" />
+                <div className="h-3 w-16 bg-gray-200 rounded" />
+                <div className="flex-1 h-px bg-gray-200" />
+              </div>
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="space-y-2">
+                  <div className="h-4 bg-gray-100 rounded w-3/4" />
+                  <div className="h-3 bg-gray-50 rounded w-full" />
+                </div>
+              ))}
+            </div>
+          ) : <>
           {/* AI Recommended Expressions */}
           {selectedSession.expressions && selectedSession.expressions.length > 0 && (
             <div className="mb-8">
@@ -317,6 +348,7 @@ function HistoryContent() {
           ) : (
             <p className="text-sm text-gray-500 text-center py-4">{t("history.noCorrections")}</p>
           )}
+          </>}
         </div>
       </div>
     );
