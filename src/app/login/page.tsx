@@ -5,11 +5,12 @@ import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [step, setStep] = useState<"email" | "otp">("email");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || loading) return;
 
@@ -18,9 +19,6 @@ export default function LoginPage() {
 
     const { error: authError } = await supabase.auth.signInWithOtp({
       email: email.trim(),
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
     });
 
     setLoading(false);
@@ -30,10 +28,33 @@ export default function LoginPage() {
       return;
     }
 
-    setSent(true);
+    setStep("otp");
   };
 
-  if (sent) {
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otp.trim() || loading) return;
+
+    setLoading(true);
+    setError("");
+
+    const { error: verifyError } = await supabase.auth.verifyOtp({
+      email: email.trim(),
+      token: otp.trim(),
+      type: "email",
+    });
+
+    setLoading(false);
+
+    if (verifyError) {
+      setError(verifyError.message);
+      return;
+    }
+
+    window.location.href = "/";
+  };
+
+  if (step === "otp") {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-white">
         <div className="w-full max-w-sm text-center">
@@ -43,16 +64,52 @@ export default function LoginPage() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            메일을 확인하세요
+            인증 코드를 입력하세요
           </h1>
           <p className="text-gray-500 text-sm mb-2">
             <span className="font-medium text-gray-700">{email}</span>
           </p>
-          <p className="text-gray-500 text-sm">
-            로그인 링크를 보냈습니다. 메일함을 확인해 주세요.
+          <p className="text-gray-500 text-sm mb-6">
+            이메일로 전송된 6자리 코드를 입력해 주세요.
           </p>
+
+          <form onSubmit={handleVerifyOtp} className="space-y-4">
+            <input
+              type="text"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              placeholder="000000"
+              autoFocus
+              inputMode="numeric"
+              maxLength={6}
+              className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-4 text-gray-900 placeholder-gray-300 outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-colors text-center text-2xl tracking-[0.5em] font-mono"
+            />
+
+            {error && (
+              <p className="text-red-500 text-sm px-1">{error}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading || otp.length < 6}
+              className="w-full rounded-2xl bg-blue-500 py-4 text-white font-semibold text-base transition-colors hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <span className="inline-flex items-center gap-2">
+                  <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  확인 중...
+                </span>
+              ) : (
+                "확인"
+              )}
+            </button>
+          </form>
+
           <button
-            onClick={() => { setSent(false); setEmail(""); }}
+            onClick={() => { setStep("email"); setOtp(""); setError(""); }}
             className="mt-8 text-sm text-gray-400 hover:text-gray-600 transition-colors"
           >
             다른 이메일로 로그인
@@ -72,7 +129,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSendOtp} className="space-y-4">
           <div>
             <input
               type="email"
@@ -103,13 +160,13 @@ export default function LoginPage() {
                 전송 중...
               </span>
             ) : (
-              "로그인 링크 받기"
+              "인증 코드 받기"
             )}
           </button>
         </form>
 
         <p className="mt-6 text-center text-xs text-gray-400">
-          이메일로 전송되는 링크를 클릭하면 로그인됩니다.
+          이메일로 전송되는 6자리 코드를 입력하면 로그인됩니다.
           <br />
           비밀번호가 필요 없어요.
         </p>
