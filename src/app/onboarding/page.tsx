@@ -43,7 +43,7 @@ const labels = {
     step4Send: "\uC778\uC99D \uCF54\uB4DC \uBC1B\uAE30",
     step4Sending: "\uC804\uC1A1 \uC911...",
     step4SentTitle: "\uC778\uC99D \uCF54\uB4DC\uB97C \uC785\uB825\uD558\uC138\uC694",
-    step4SentDesc: "\uC774\uBA54\uC77C\uB85C \uC804\uC1A1\uB41C 6\uC790\uB9AC \uCF54\uB4DC\uB97C \uC785\uB825\uD574 \uC8FC\uC138\uC694.",
+    step4SentDesc: "\uC774\uBA54\uC77C\uB85C \uC804\uC1A1\uB41C 8\uC790\uB9AC \uCF54\uB4DC\uB97C \uC785\uB825\uD574 \uC8FC\uC138\uC694.",
     step4Verify: "\uD655\uC778",
     step4Verifying: "\uD655\uC778 \uC911...",
     step4Retry: "\uB2E4\uB978 \uC774\uBA54\uC77C\uB85C \uC2DC\uB3C4",
@@ -67,7 +67,7 @@ const labels = {
     step4Send: "\u8A8D\u8A3C\u30B3\u30FC\u30C9\u3092\u53D7\u3051\u53D6\u308B",
     step4Sending: "\u9001\u4FE1\u4E2D...",
     step4SentTitle: "\u8A8D\u8A3C\u30B3\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044",
-    step4SentDesc: "\u30E1\u30FC\u30EB\u306B\u9001\u4FE1\u3055\u308C\u305F6\u6841\u306E\u30B3\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+    step4SentDesc: "\u30E1\u30FC\u30EB\u306B\u9001\u4FE1\u3055\u308C\u305F8\u6841\u306E\u30B3\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
     step4Verify: "\u78BA\u8A8D",
     step4Verifying: "\u78BA\u8A8D\u4E2D...",
     step4Retry: "\u5225\u306E\u30E1\u30FC\u30EB\u3067\u8A66\u3059",
@@ -91,7 +91,7 @@ const labels = {
     step4Send: "\u83B7\u53D6\u9A8C\u8BC1\u7801",
     step4Sending: "\u53D1\u9001\u4E2D...",
     step4SentTitle: "\u8BF7\u8F93\u5165\u9A8C\u8BC1\u7801",
-    step4SentDesc: "\u8BF7\u8F93\u5165\u90AE\u4EF6\u4E2D\u76846\u4F4D\u9A8C\u8BC1\u7801\u3002",
+    step4SentDesc: "\u8BF7\u8F93\u5165\u90AE\u4EF6\u4E2D\u76848\u4F4D\u9A8C\u8BC1\u7801\u3002",
     step4Verify: "\u786E\u8BA4",
     step4Verifying: "\u786E\u8BA4\u4E2D...",
     step4Retry: "\u6362\u4E00\u4E2A\u90AE\u7BB1",
@@ -356,11 +356,11 @@ export default function OnboardingPage() {
                 <input
                   type="text"
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  placeholder="000000"
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                  placeholder="00000000"
                   autoFocus
                   inputMode="numeric"
-                  maxLength={6}
+                  maxLength={8}
                   className="w-full rounded-2xl border-2 border-gray-200 bg-white px-6 py-5 text-2xl text-gray-900 placeholder-gray-300 outline-none focus:border-blue-500 transition-colors text-center tracking-[0.5em] font-mono"
                 />
                 {emailError && (
@@ -368,7 +368,7 @@ export default function OnboardingPage() {
                 )}
                 <button
                   type="submit"
-                  disabled={otpVerifying || otp.length < 6}
+                  disabled={otpVerifying || otp.length < 8}
                   className="w-full rounded-2xl bg-blue-500 py-4 text-white font-semibold text-base transition-all hover:bg-blue-600 disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   {otpVerifying ? (
