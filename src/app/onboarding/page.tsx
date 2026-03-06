@@ -387,10 +387,14 @@ export default function OnboardingPage() {
 
               <button
                 onClick={() => { setEmailSent(false); setEmail(""); setOtp(""); setEmailError(""); }}
-                className="mt-8 text-sm text-gray-400 hover:text-gray-600 transition-colors"
+                className="mt-6 text-sm text-gray-400 hover:text-gray-600 transition-colors"
               >
                 {t.step4Retry}
               </button>
+
+              <p className="mt-3 text-xs text-gray-300">
+                메일이 오지 않았다면 스팸함을 확인해 주세요.
+              </p>
             </div>
           ) : (
             <>
