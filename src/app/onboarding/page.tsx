@@ -40,12 +40,10 @@ const labels = {
     step4Title: "\uC774\uBA54\uC77C\uB85C \uC2DC\uC791\uD558\uAE30",
     step4Subtitle: "\uB370\uC774\uD130\uB97C \uC548\uC804\uD558\uAC8C \uC800\uC7A5\uD558\uACE0 \uB3D9\uAE30\uD654\uD569\uB2C8\uB2E4",
     step4Placeholder: "\uC774\uBA54\uC77C \uC8FC\uC18C",
-    step4Send: "\uC778\uC99D \uCF54\uB4DC \uBC1B\uAE30",
+    step4Send: "\uB85C\uADF8\uC778 \uB9C1\uD06C \uBC1B\uAE30",
     step4Sending: "\uC804\uC1A1 \uC911...",
-    step4SentTitle: "\uC778\uC99D \uCF54\uB4DC\uB97C \uC785\uB825\uD558\uC138\uC694",
-    step4SentDesc: "\uC774\uBA54\uC77C\uB85C \uC804\uC1A1\uB41C 8\uC790\uB9AC \uCF54\uB4DC\uB97C \uC785\uB825\uD574 \uC8FC\uC138\uC694.",
-    step4Verify: "\uD655\uC778",
-    step4Verifying: "\uD655\uC778 \uC911...",
+    step4SentTitle: "\uBA54\uC77C\uD568\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694",
+    step4SentDesc: "\uB85C\uADF8\uC778 \uB9C1\uD06C\uB97C \uBCF4\uB0C8\uC2B5\uB2C8\uB2E4. \uBA54\uC77C\uC758 \uB9C1\uD06C\uB97C \uB204\uB974\uBA74 \uBC14\uB85C \uB85C\uADF8\uC778\uB429\uB2C8\uB2E4.",
     step4Retry: "\uB2E4\uB978 \uC774\uBA54\uC77C\uB85C \uC2DC\uB3C4",
     step4Note: "\uBE44\uBC00\uBC88\uD638 \uC5C6\uC774 \uC774\uBA54\uC77C\uB85C\uB9CC \uB85C\uADF8\uC778\uB429\uB2C8\uB2E4.",
     hasAccount: "\uC774\uBBF8 \uACC4\uC815\uC774 \uC788\uC73C\uC2E0\uAC00\uC694?",
@@ -64,12 +62,10 @@ const labels = {
     step4Title: "\u30E1\u30FC\u30EB\u3067\u59CB\u3081\u308B",
     step4Subtitle: "\u30C7\u30FC\u30BF\u3092\u5B89\u5168\u306B\u4FDD\u5B58\u30FB\u540C\u671F\u3057\u307E\u3059",
     step4Placeholder: "\u30E1\u30FC\u30EB\u30A2\u30C9\u30EC\u30B9",
-    step4Send: "\u8A8D\u8A3C\u30B3\u30FC\u30C9\u3092\u53D7\u3051\u53D6\u308B",
+    step4Send: "\u30ED\u30B0\u30A4\u30F3\u30EA\u30F3\u30AF\u3092\u53D7\u3051\u53D6\u308B",
     step4Sending: "\u9001\u4FE1\u4E2D...",
-    step4SentTitle: "\u8A8D\u8A3C\u30B3\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044",
-    step4SentDesc: "\u30E1\u30FC\u30EB\u306B\u9001\u4FE1\u3055\u308C\u305F8\u6841\u306E\u30B3\u30FC\u30C9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
-    step4Verify: "\u78BA\u8A8D",
-    step4Verifying: "\u78BA\u8A8D\u4E2D...",
+    step4SentTitle: "\u30E1\u30FC\u30EB\u3092\u3054\u78BA\u8A8D\u304F\u3060\u3055\u3044",
+    step4SentDesc: "\u30ED\u30B0\u30A4\u30F3\u30EA\u30F3\u30AF\u3092\u9001\u4FE1\u3057\u307E\u3057\u305F\u3002\u30E1\u30FC\u30EB\u5185\u306E\u30EA\u30F3\u30AF\u3092\u62BC\u3059\u3068\u30ED\u30B0\u30A4\u30F3\u3067\u304D\u307E\u3059\u3002",
     step4Retry: "\u5225\u306E\u30E1\u30FC\u30EB\u3067\u8A66\u3059",
     step4Note: "\u30D1\u30B9\u30EF\u30FC\u30C9\u4E0D\u8981\u3067\u30E1\u30FC\u30EB\u3060\u3051\u3067\u30ED\u30B0\u30A4\u30F3\u3067\u304D\u307E\u3059\u3002",
     hasAccount: "\u3059\u3067\u306B\u30A2\u30AB\u30A6\u30F3\u30C8\u3092\u304A\u6301\u3061\u3067\u3059\u304B\uFF1F",
@@ -88,12 +84,10 @@ const labels = {
     step4Title: "\u7528\u90AE\u7BB1\u5F00\u59CB",
     step4Subtitle: "\u5B89\u5168\u4FDD\u5B58\u548C\u540C\u6B65\u4F60\u7684\u6570\u636E",
     step4Placeholder: "\u90AE\u7BB1\u5730\u5740",
-    step4Send: "\u83B7\u53D6\u9A8C\u8BC1\u7801",
+    step4Send: "\u83B7\u53D6\u767B\u5F55\u94FE\u63A5",
     step4Sending: "\u53D1\u9001\u4E2D...",
-    step4SentTitle: "\u8BF7\u8F93\u5165\u9A8C\u8BC1\u7801",
-    step4SentDesc: "\u8BF7\u8F93\u5165\u90AE\u4EF6\u4E2D\u76848\u4F4D\u9A8C\u8BC1\u7801\u3002",
-    step4Verify: "\u786E\u8BA4",
-    step4Verifying: "\u786E\u8BA4\u4E2D...",
+    step4SentTitle: "\u8BF7\u67E5\u6536\u90AE\u4EF6",
+    step4SentDesc: "\u5DF2\u53D1\u9001\u767B\u5F55\u94FE\u63A5\u3002\u70B9\u51FB\u90AE\u4EF6\u4E2D\u7684\u94FE\u63A5\u5373\u53EF\u767B\u5F55\u3002",
     step4Retry: "\u6362\u4E00\u4E2A\u90AE\u7BB1",
     step4Note: "\u65E0\u9700\u5BC6\u7801\uFF0C\u4EC5\u901A\u8FC7\u90AE\u7BB1\u5373\u53EF\u767B\u5F55\u3002",
     hasAccount: "\u5DF2\u6709\u8D26\u6237\uFF1F",
@@ -116,8 +110,6 @@ export default function OnboardingPage() {
   const [emailSent, setEmailSent] = useState(false);
   const [emailLoading, setEmailLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
-  const [otp, setOtp] = useState("");
-  const [otpVerifying, setOtpVerifying] = useState(false);
 
   const lang = (nativeLang === "ja" ? "ja" : nativeLang === "zh" ? "zh" : "ko") as "ko" | "ja" | "zh";
   const t = labels[lang];
@@ -160,8 +152,19 @@ export default function OnboardingPage() {
     setEmailLoading(true);
     setEmailError("");
 
+    // 코드(OTP) 방식에서 링크 방식으로 바꿨다.
+    // 통합 허브는 이메일 템플릿이 프로젝트당 하나뿐이라 같은 프로젝트를 쓰는
+    // 다른 앱(링크 방식)과 방식을 맞춰야 한다.
+    //
+    // 링크를 누르면 /auth/callback 으로 착지하고, 거기서 세션 교환과
+    // 프로필 upsert 가 이뤄진다. 여기서 localStorage 에 담아 둔 온보딩 값은
+    // 콜백(서버 라우트)이 읽을 수 없지만, 홈으로 돌아온 뒤 LanguageProvider 가
+    // 같은 값을 프로필에 동기화하고 키를 정리한다.
     const { error: authError } = await supabase.auth.signInWithOtp({
       email: email.trim(),
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
     });
 
     setEmailLoading(false);
@@ -172,44 +175,6 @@ export default function OnboardingPage() {
     }
 
     setEmailSent(true);
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!otp.trim() || otpVerifying) return;
-
-    setOtpVerifying(true);
-    setEmailError("");
-
-    const { data, error: verifyError } = await supabase.auth.verifyOtp({
-      email: email.trim(),
-      token: otp.trim(),
-      type: "email",
-    });
-
-    if (verifyError) {
-      setOtpVerifying(false);
-      setEmailError(verifyError.message);
-      return;
-    }
-
-    // Sync onboarding data to profile
-    if (data.user) {
-      await supabase
-        .from("profiles")
-        .update({
-          native_language: localStorage.getItem(STORAGE_KEYS.native) || "ko",
-          learning_language: localStorage.getItem(STORAGE_KEYS.learning) || "en",
-          display_name: localStorage.getItem(STORAGE_KEYS.name) || "",
-          onboarding_completed: true,
-        })
-        .eq("id", data.user.id);
-
-      Object.values(STORAGE_KEYS).forEach((key) => localStorage.removeItem(key));
-    }
-
-    setOtpVerifying(false);
-    window.location.href = "/";
   };
 
   const slideClass = (targetStep: Step) => {
@@ -337,7 +302,7 @@ export default function OnboardingPage() {
           </div>
         </div>
 
-        {/* Step 3: Email + OTP Verification */}
+        {/* Step 3: Email + 로그인 링크 발송 */}
         <div className={`absolute inset-0 flex flex-col items-center justify-center px-8 ${slideClass(3)}`}>
           {emailSent ? (
             <div className="w-full max-w-sm text-center">
@@ -352,41 +317,12 @@ export default function OnboardingPage() {
               </p>
               <p className="text-gray-500 text-sm mb-6">{t.step4SentDesc}</p>
 
-              <form onSubmit={handleVerifyOtp} className="space-y-4">
-                <input
-                  type="text"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                  placeholder="00000000"
-                  autoFocus
-                  inputMode="numeric"
-                  maxLength={8}
-                  className="w-full rounded-2xl border-2 border-gray-200 bg-white px-6 py-5 text-2xl text-gray-900 placeholder-gray-300 outline-none focus:border-blue-500 transition-colors text-center tracking-[0.5em] font-mono"
-                />
-                {emailError && (
-                  <p className="text-red-500 text-sm px-1 text-center">{emailError}</p>
-                )}
-                <button
-                  type="submit"
-                  disabled={otpVerifying || otp.length < 8}
-                  className="w-full rounded-2xl bg-blue-500 py-4 text-white font-semibold text-base transition-all hover:bg-blue-600 disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  {otpVerifying ? (
-                    <span className="inline-flex items-center gap-2">
-                      <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                      {t.step4Verifying}
-                    </span>
-                  ) : (
-                    t.step4Verify
-                  )}
-                </button>
-              </form>
+              {emailError && (
+                <p className="text-red-500 text-sm px-1 text-center mb-4">{emailError}</p>
+              )}
 
               <button
-                onClick={() => { setEmailSent(false); setEmail(""); setOtp(""); setEmailError(""); }}
+                onClick={() => { setEmailSent(false); setEmail(""); setEmailError(""); }}
                 className="mt-6 text-sm text-gray-400 hover:text-gray-600 transition-colors"
               >
                 {t.step4Retry}
