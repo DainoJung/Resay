@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   const redirectUrl = req.nextUrl.clone();
 
   if (code) {
-    const supabase = createSupabaseServerClient();
+    const supabase = await createSupabaseServerClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
