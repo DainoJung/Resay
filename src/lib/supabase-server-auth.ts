@@ -8,6 +8,8 @@ export function createSupabaseServerClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      // 통합 허브에서 이 앱의 테이블은 resay 스키마에 있다.
+      db: { schema: "resay" },
       cookies: {
         getAll() {
           return cookieStore.getAll();
